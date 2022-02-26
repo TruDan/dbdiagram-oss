@@ -1,7 +1,12 @@
 <template>
 <q-btn-group>
   <q-btn icon="save" />
-  <q-toggle :model-value="$q.dark.isActive" @update:model-value="$q.dark.toggle" />
+  <q-toggle
+        :model-value="$q.dark.isActive"
+        @update:model-value="$q.dark.toggle"
+        :dark="$q.dark.isActive"
+        color="secondary"
+  />
 </q-btn-group>
 </template>
 

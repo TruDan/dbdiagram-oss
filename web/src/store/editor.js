@@ -8,6 +8,10 @@ export const useEditorStore = defineStore("editor", {
       format: "dbml",
       text: ""
     },
+    positions: {
+      tablePositions: [],
+      refVertices: []
+    },
     database: {
       schemas: [
         {
@@ -26,6 +30,9 @@ export const useEditorStore = defineStore("editor", {
     },
     getDatabase(state) {
       return state.database;
+    },
+    getPositions(state) {
+      return state.positions;
     }
   },
   actions: {
@@ -36,6 +43,11 @@ export const useEditorStore = defineStore("editor", {
           text: sourceText
         }
       })
+    },
+    updatePositions(positions) {
+      this.$patch({
+        positions: positions
+      });
     },
     updateDatabase() {
       try {

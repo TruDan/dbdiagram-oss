@@ -13,6 +13,7 @@
         <dbml-graph
           class="db-graph-view"
           :schema="schema"
+          v-model:positions="positions"
         />
       </template>
     </q-splitter>
@@ -24,22 +25,25 @@
   import DbmlEditor from 'components/DbmlEditor'
   import DbmlGraph from 'components/DbmlGraph'
   import { useEditorStore } from 'src/store/editor'
-  import { throttle } from 'quasar';
+  import { debounce, throttle } from 'quasar'
 
   export default {
     name: 'Editor',
     components: { DbmlEditor, DbmlGraph },
     setup () {
       const editor = useEditorStore();
-      const updateDatabaseThrottled = throttle(() => {
+      const updateDatabaseThrottled = debounce(() => {
         editor.updateDatabase();
       }, 250);
-      const saveToLocalStorageThrottled = throttle((v) => {
+      const saveSourceToLocalStorageThrottled = throttle((v) => {
         localStorage.setItem("dbml-source", btoa(v))
+      }, 250);
+      const savePositionsToLocalStorageThrottled = throttle((v) => {
+        localStorage.setItem("dbml-positions", btoa(JSON.stringify(v)))
       }, 250);
       const updateSourceText = (src) => {
         editor.updateSourceText(src);
-        saveToLocalStorageThrottled(src);
+        saveSourceToLocalStorageThrottled(src);
         updateDatabaseThrottled();
       }
       const sourceText = computed({
@@ -47,13 +51,29 @@
         set: updateSourceText
       });
 
+      const updatePositions = (src) => {
+        editor.updatePositions(src);
+        savePositionsToLocalStorageThrottled(src);
+      }
+
+      const positions = computed({
+        get: () => editor.getPositions,
+        set: updatePositions
+      })
+
       onMounted(() => {
         const src = localStorage.getItem('dbml-source');
-        console.log("Loaded", atob(src))
-        if(src != null) {
-          updateSourceText(atob(src));
+        const positions = localStorage.getItem('dbml-positions');
+        console.log("Loaded", atob(src), JSON.parse(atob(positions)))
+        if(src || positions) {
+          if(src)
+            updateSourceText(atob(src));
+
           setTimeout(() => {
             editor.updateDatabase();
+
+            if(positions)
+              updatePositions(JSON.parse(atob(positions)));
           }, 250);
         }
       })
@@ -66,6 +86,7 @@
       return {
         sourceText,
         schema,
+        positions,
         updateSourceText,
         splitterModel
       }

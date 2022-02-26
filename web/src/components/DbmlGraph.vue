@@ -7,10 +7,16 @@
       <q-toolbar class="bg-dark text-white q-btn--rounded">
         <q-btn
           flat
-               dense
+          dense
           @click="autoLayout"
         >
           Auto-Layout
+        </q-btn>
+        <q-btn
+          flat
+          dense
+          @click="scaleToFit">
+          Fit
         </q-btn>
       </q-toolbar>
     </div>
@@ -18,20 +24,25 @@
 </template>
 
 <script>
-  import { dia, layout, linkTools, shapes } from 'jointjs'
+  import { dia, layout, linkTools, shapes, V } from 'jointjs'
   import { createRefLink, createTableElement, TableElement } from 'components/DbmlGraphElements/TableElement'
   import { GRID_SIZE } from 'components/DbmlGraphElements/constants'
   import { RefLink } from 'components/DbmlGraphElements/RefLink'
   import svgPanZoom from 'svg-pan-zoom'
   import { colors } from 'quasar'
+
   const { getPaletteColor } = colors
-  import * as dagre from '@dagrejs/dagre';
-  import * as graphlib from '@dagrejs/graphlib';
+  import * as dagre from '@dagrejs/dagre'
+  import * as graphlib from '@dagrejs/graphlib'
 
   export default {
     name: 'DbmlGraph',
     props: {
       schema: {
+        type: Object,
+        required: true
+      },
+      positions: {
         type: Object,
         required: true
       }
@@ -49,15 +60,69 @@
     watch: {
       schema (newValue) {
         this.recalculateNodes(newValue)
+      },
+      positions (newValue) {
+        this.repositionNodes(newValue)
       }
     },
     methods: {
-      autoLayout() {
+      autoLayout () {
         layout.DirectedGraph.layout(this.graph, {
           setLinkVertices: false,
           dagre: dagre,
           graphlib: graphlib
         })
+      },
+      scaleToFit () {
+        this.paper.scaleContentToFit({ padding: 50 })
+      },
+      exportToJSON () {
+        /*
+        {
+          "tablePositions": [
+            ...{ id: 1, x: 50, y: 60 }
+          ],
+          "refVertices": [
+          ...{
+               id: 2,
+               vertices: [
+                 ...{ x: 60, y: 40 }
+               ]
+             }]
+        }
+         */
+        const allTableCells = this.graph.getCells().filter(c => /^table-.*/.test(c.id))
+        const allRefCells = this.graph.getCells().filter(c => /^ref-.*/.test(c.id))
+
+        return {
+          tablePositions: allTableCells.map(tableCell => {
+            const pos = tableCell.position()
+            return {
+              id: tableCell.id.match(/^table-(?<id>.*)/).groups.id,
+              x: pos.x,
+              y: pos.y
+            }
+          }),
+          refVertices: allRefCells.map(refCell => ({
+            id: refCell.id.match(/^ref-(?<id>.*)/).groups.id,
+            vertices: refCell.vertices().map(v => ({
+              x: v.x,
+              y: v.y
+            }))
+          }))
+        }
+      },
+      importFromJSON (json) {
+        for (const tablePosition of json.tablePositions) {
+          const tableCell = this.graph.getCell(`table-${tablePosition.id}`)
+          if (!tableCell) continue
+          tableCell.translate(tablePosition.x, tablePosition.y)
+        }
+        for (const refVertexes of json.refVertices) {
+          const refCell = this.graph.getCell(`ref-${refVertexes.id}`)
+          if (!refCell) continue
+          refCell.vertices(refVertexes.vertices)
+        }
       },
       setupChart () {
         const paper = this.$refs.paper
@@ -69,8 +134,8 @@
         this.graph = new dia.Graph({}, { cellNamespace: shapeNamespace })
         this.paper = new dia.Paper({
           el: paper,
-          width: 1000,
-          height: 800,
+          width: '100%',
+          height: '100%',
           gridSize: GRID_SIZE,
           model: this.graph,
           frozen: true,
@@ -88,38 +153,53 @@
               endDirections: ['left', 'right']
             }
           },
+          defaultConnectionPoint: {
+            name: 'boundary',
+            args: {
+              extrapolate: true,
+              sticky: true
+            }
+          },
           defaultConnector: {
             name: 'rounded'
           },
-          drawGrid: 'fixedDot',
+          drawGrid: {
+            color: '#AAAAAA',
+            thickness: 1,
+            markup: 'rect',
+            update: function (el, opt) {
+              V(el).attr({
+                width: opt.thickness * opt.sx,
+                height: opt.thickness * opt.sy,
+                fill: opt.color,
+                opacity: 0.5
+              })
+            }
+          },
 
           cellViewNamespace: shapeNamespace,
           validateConnection: (sourceView, _sourceMagnet, targetView, _targetMagnet) => {
             //if (sourceView === targetView) return false
-            return true
+            return false
           }
         })
-        this.paper.on('link:mouseenter', function(linkView) {
+        this.paper.on('link:mouseenter', function (linkView) {
           let tools = new dia.ToolsView({
-            tools: [new linkTools.Vertices()]
-          });
-          linkView.addTools(tools);
-        });
-
-        this.paper.on('link:mouseleave', function(linkView) {
-          linkView.removeTools();
-        });
-
-        const resizeWatcher = new ResizeObserver((entries) => {
-          for (let entry of entries) {
-            if (entry.contentBoxSize) {
-              const contentBoxSize = Array.isArray(entry.contentBoxSize) ? entry.contentBoxSize[0] : entry.contentBoxSize
-
-              this.paper.setDimensions(contentBoxSize.width, contentBoxSize.height)
-            }
-          }
+            tools: [
+              new linkTools.Vertices({ stopPropagation: false }),
+              new linkTools.Segments({ stopPropagation: false })
+            ]
+          })
+          linkView.addTools(tools)
         })
-        resizeWatcher.observe(paper)
+        const that = this
+        this.graph.on('change', function () {
+          that.emitPositions()
+        })
+
+        this.paper.on('link:mouseleave', function (linkView) {
+          linkView.removeTools()
+        })
 
         this.panAndZoom = svgPanZoom(paper.querySelector('svg'), {
           viewportSelector: paper.childNodes[0].childNodes[0],
@@ -133,7 +213,7 @@
           'blank:pointerup': (cellView, event) => this.panAndZoom.disablePan(),
         })
 
-        this.graph.resetCells([]);
+        this.graph.resetCells([])
 
         if (this.schema) {
           this.recalculateNodes(this.schema)
@@ -153,32 +233,43 @@
       recalculateNodes (schema) {
         this.paper.freeze()
 
-        this.syncTables(schema.tables);
-        this.syncRefs(schema.refs);
-
+        this.syncTables(schema.tables)
+        this.syncRefs(schema.refs)
+        if (this.positions) {
+          this.repositionNodes(this.positions)
+        }
         this.paper.unfreeze()
       },
+      repositionNodes (positions) {
+        this.importFromJSON(positions)
+      },
+      emitPositions () {
+        const positions = this.exportToJSON()
+        this.$emit('update:positions', positions)
+      },
 
-      syncTables(tables) {
+      syncTables (tables) {
         for (const table of tables) {
           this.addOrUpdateTable(table)
         }
 
-        for (const table of this.graph.getElements()) {
+        const allCells = this.graph.getCells().filter(c => /^table-.*/.test(c.id))
+        for (const table of allCells) {
           if (!tables.some(t => `table-${t.id}` === table.id)) {
             this.graph.removeCells([table])
           }
         }
       },
 
-      syncRefs(refs) {
+      syncRefs (refs) {
         for (const ref of refs) {
           this.addOrUpdateRef(ref)
         }
 
-        for (const ref of this.graph.getLinks()) {
+        const allCells = this.graph.getCells().filter(c => /^ref-.*/.test(c.id))
+        for (const ref of allCells) {
           if (!refs.some(t => `ref-${t.id}` === ref.id)) {
-            this.graph.removeLinks(ref);
+            this.graph.removeLinks(ref)
           }
         }
       },
@@ -187,8 +278,9 @@
         let cell = this.graph.getCell(`table-${table.id}`)
         if (!cell) {
           cell = createTableElement(table)
-          cell.addTo(this.graph);
+          cell.addTo(this.graph)
         }
+        cell.updateTable(table)
 
         for (const field of table.fields) {
           cell.addOrUpdateField(field)
@@ -203,21 +295,27 @@
         return cell
       },
 
-      addOrUpdateRef(ref) {
-        let link = this.graph.getCell(`ref-${ref.id}`);
-        if(!link) {
-          link = createRefLink(ref);
-          this.graph.addCell(link);
+      addOrUpdateRef (ref) {
+        let link = this.graph.getCell(`ref-${ref.id}`)
+        if (!link) {
+          link = createRefLink(ref)
+          link.addTo(this.graph)
         }
 
-        const sourceTable = ref.endpoints[0];
-        const sourceField = sourceTable.fields[0];
+        const sourceField = ref.endpoints[0].fields[0]
+        const sourceTable = sourceField.table
 
-        const targetTable = ref.endpoints[1];
-        const targetField = targetTable.fields[0];
+        const targetField = ref.endpoints[1].fields[0]
+        const targetTable = targetField.table
 
-        link.source({ id: `table-${sourceTable.id}`, port: `field-${sourceField.id}`});
-        link.target({ id: `table-${targetTable.id}`, port: `field-${targetField.id}`});
+        link.source({
+          id: `table-${sourceTable.id}`,
+          port: `field-${sourceField.id}`
+        })
+        link.target({
+          id: `table-${targetTable.id}`,
+          port: `field-${targetField.id}`
+        })
       }
     }
   }

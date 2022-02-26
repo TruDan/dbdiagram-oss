@@ -1,3 +1,4 @@
+@import "jointjs";
 $table-border-width: 2 !default;
 
 $table-header-padding-x: 8px !default;
@@ -65,6 +66,7 @@ $table-field-padding-y: 9px !default;
 
   background-color: var(--chart-bg-color);
 
+
   .table {
     &-header {
       rect {
@@ -109,5 +111,13 @@ $table-field-padding-y: 9px !default;
     stroke: var(--ref-color);
     stroke-width: 2;
     stroke-linejoin: round;
+  }
+  .grid {
+    stroke: #16a085;
+    stroke-width: 0.5;
+    stroke-opacity: 0;
+    transition-property: stroke-opacity;
+    transition-duration: 1s;
+    pointer-events: none;
   }
 }

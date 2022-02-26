@@ -8,7 +8,7 @@ import {RefLink} from "components/DbmlGraphElements/RefLink";
 export const itemPosition = (portsArgs: dia.Element.Port[], elBBox: dia.BBox): g.Point[] => {
   return portsArgs.map((_port: dia.Element.Port, index: number, {length}) => {
     const bottom = elBBox.height - (LIST_ITEM_HEIGHT/2);
-    const y = (length - 1 - index) * (LIST_ITEM_HEIGHT + LIST_ITEM_GAP);
+    const y = (length - 1 - index) * (LIST_ITEM_HEIGHT);
     return new g.Point(0, bottom - y);
   });
 };
@@ -129,6 +129,23 @@ export class TableElement extends dia.Element {
       port = createFieldPort(field);
       this.addPort(port);
     }
+
+    if(port.attrs && port.attrs.fieldName && port.attrs.fieldType) {
+      port.attrs.fieldName.text = field.name;
+      port.attrs.fieldType.text = field.type.type_name;
+    }
+  }
+
+  updateTable(table: Table) {
+    this.setHeaderText(table.name);
+    this.setHeaderColor(table.headerColor);
+  }
+
+  setHeaderText(headerText) {
+    this.attr('headerText.text', headerText);
+  }
+  setHeaderColor(headerColor) {
+    this.attr('headerBody.fill', headerColor);
   }
 }
 
