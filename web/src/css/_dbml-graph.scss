@@ -1,0 +1,113 @@
+$table-border-width: 2 !default;
+
+$table-header-padding-x: 8px !default;
+$table-header-padding-y: 9px !default;
+
+$table-field-padding-x: 8px !default;
+$table-field-padding-y: 9px !default;
+
+.body {
+  &--dark {
+    --chart-bg-color: #44444c;
+    --ref-color: #9b9ca4;
+    --ref-highlight-color: #3ea8de;
+    --field-name-color: #d7d7d9;
+    --field-type-color: #999;
+    --field-bg-color: #37383f;
+    --pk-field-color: #d7d7d9;
+    --highlight-field-color: #4b4c53;
+    --temp-ref-color: #5d5e67;
+    --endpoint-color: #d7d7d9;
+    --graph-container-bg-color: #37383f;
+    --graph-container-color: #d7d7d9;
+    --graph-container-color-hover: #fff;
+    --table-stroke-color: #222;
+    --table-header-color: #222;
+    --table-header-fg-color: #FFFFFF;
+    --table-group-color: #56565e;
+    --table-group-stroke-color: #696969;
+    --table-group-name-color: #fbfbfb;
+  }
+
+  &--light {
+    --chart-bg-color: #fbfbfb;
+
+    --ref-color: #d3d3d3;
+    --ref-highlight-color: #619bcc;
+
+    --field-name-color: #6f6f6f;
+    --field-type-color: #999;
+    --field-bg-color: #f6f6f6;
+
+    --pk-field-color: #000;
+    --highlight-field-color: #deecf3;
+
+    --temp-ref-color: #87cefa;
+    --endpoint-color: #000;
+
+    --graph-container-bg-color: #f1f1f1;
+    --graph-container-color: #555;
+
+    --table-header-color: #316896;
+    --table-header-fg-color: #FFFFFF;
+
+    --table-stroke-color: #ebebeb;
+    --table-group-color: #ebebeb;
+    --table-group-stroke-color: #dfdfdf;
+    --table-group-name-color: #555;
+  }
+}
+
+.dbml-graph {
+  font-family: sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+
+  background-color: var(--chart-bg-color);
+
+  .table {
+    &-header {
+      rect {
+        cursor: grab;
+
+        &:not([fill]), &[fill="undefined"]{
+          fill: var(--table-header-color);
+        }
+      }
+
+
+      text {
+        transform: translate($table-header-padding-x, $table-header-padding-y);
+        font-weight: 700;
+        font-size: 16px;
+        fill: var(--table-header-fg-color);
+      }
+    }
+  }
+
+  .table-field {
+    vertical-align: middle;
+
+    rect {
+      fill: var(--field-bg-color);
+    }
+
+    &__name {
+      fill: var(--field-name-color);
+      font-size: 12px;
+    }
+
+    &__type {
+      font-size: 12px;
+      fill: var(--field-type-color);
+      text-anchor: end;
+    }
+  }
+
+  .ref {
+    fill: none;
+    stroke: var(--ref-color);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+}

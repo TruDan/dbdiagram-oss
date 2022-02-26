@@ -1,0 +1,65 @@
+{
+  "name": "dbdiagram-oss",
+  "version": "0.0.1",
+  "description": "An Open-Source dbdiagram.io",
+  "productName": "DB Diagram OSS",
+  "author": "Dan Spiteri <trudan97@gmail.com>",
+  "private": true,
+  "scripts": {
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "build:pwa": "quasar build -m pwa",
+    "lint": "eslint --ext .js,.vue ./",
+    "test": "echo \"No test specified\" && exit 0",
+    "tsc": "tsc"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^0.8.0",
+    "@dagrejs/graphlib": "^2.1.4",
+    "@dbml/core": "^2.3.1",
+    "@quasar/extras": "^1.0.0",
+    "core-js": "^3.6.5",
+    "jointjs": "^3.5.3",
+    "pinia": "^2.0.11",
+    "quasar": "^2.0.0",
+    "svg-pan-zoom": "^3.6.1",
+    "v-network-graph": "^0.5.0",
+    "vue": "^3.0.0",
+    "vue-composable": "^1.0.0-beta.24",
+    "vue-i18n": "^9.0.0",
+    "vue-router": "^4.0.0",
+    "vue3-ace-editor": "^2.2.2"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.13.14",
+    "@quasar/app": "^3.0.0",
+    "@types/backbone": "^1.4.15",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "dotenv": "^16.0.0",
+    "eslint": "^8.9.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-vue": "^7.0.0",
+    "eslint-webpack-plugin": "^2.4.0",
+    "typescript": "^4.5.5"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}
