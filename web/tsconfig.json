@@ -2,6 +2,9 @@
   "extends": "@quasar/app/tsconfig-preset",
   "compilerOptions": {
     "baseUrl": ".",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "allowJs": true,
+    "declaration": true,
+    "diagnostics": true
   }
 }

@@ -1,12 +1,11 @@
 <template>
   <q-page>
-    <q-splitter v-model="splitterModel"
-
+    <q-splitter v-model="split"
+                :limits="[10,75]"
                 class="editor-wrapper">
       <template #before>
         <dbml-editor class="db-code-editor"
                      v-model:source="sourceText"
-
         />
       </template>
       <template #after>
@@ -21,74 +20,49 @@
 </template>
 
 <script>
-  import { computed, nextTick, onMounted, ref } from 'vue'
+  import { computed, nextTick, onMounted, ref, watch } from 'vue'
   import DbmlEditor from 'components/DbmlEditor'
   import DbmlGraph from 'components/DbmlGraph'
   import { useEditorStore } from 'src/store/editor'
-  import { debounce, throttle } from 'quasar'
+  import { debounce, throttle, useQuasar } from 'quasar'
 
   export default {
     name: 'Editor',
-    components: { DbmlEditor, DbmlGraph },
+    components: {
+      DbmlEditor,
+      DbmlGraph
+    },
     setup () {
-      const editor = useEditorStore();
-      const updateDatabaseThrottled = debounce(() => {
-        editor.updateDatabase();
-      }, 250);
-      const saveSourceToLocalStorageThrottled = throttle((v) => {
-        localStorage.setItem("dbml-source", btoa(v))
-      }, 250);
-      const savePositionsToLocalStorageThrottled = throttle((v) => {
-        localStorage.setItem("dbml-positions", btoa(JSON.stringify(v)))
-      }, 250);
-      const updateSourceText = (src) => {
-        editor.updateSourceText(src);
-        saveSourceToLocalStorageThrottled(src);
-        updateDatabaseThrottled();
-      }
+      const editor = useEditorStore()
+      const q = useQuasar()
+
       const sourceText = computed({
         get: () => editor.getSourceText,
-        set: updateSourceText
-      });
-
-      const updatePositions = (src) => {
-        editor.updatePositions(src);
-        savePositionsToLocalStorageThrottled(src);
-      }
+        set: (src) => editor.updateSourceText(src)
+      })
 
       const positions = computed({
         get: () => editor.getPositions,
-        set: updatePositions
+        set: (src) => editor.updatePositions(src)
       })
 
-      onMounted(() => {
-        const src = localStorage.getItem('dbml-source');
-        const positions = localStorage.getItem('dbml-positions');
-        console.log("Loaded", atob(src), JSON.parse(atob(positions)))
-        if(src || positions) {
-          if(src)
-            updateSourceText(atob(src));
-
-          setTimeout(() => {
-            editor.updateDatabase();
-
-            if(positions)
-              updatePositions(JSON.parse(atob(positions)));
-          }, 250);
-        }
+      const preferences = computed({
+        get: () => editor.getPreferences,
+        set: (src) => editor.updatePreferences(src)
+      })
+      const split = computed({
+        get: () => editor.getSplit,
+        set: (src) => editor.updateSplit(src)
       })
 
-
-      const schema = computed(() => editor.getDatabase?.schemas?.find(x => true));
-      const splitterModel = ref(25); // start at 25%
-
+      const schema = computed(() => editor.getDatabase?.schemas?.find(x => true))
 
       return {
         sourceText,
         schema,
         positions,
-        updateSourceText,
-        splitterModel
+        preferences,
+        split
       }
     }
   }

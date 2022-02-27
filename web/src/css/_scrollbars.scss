@@ -1,0 +1,37 @@
+$scrollbar-size: 9px !default;
+$scrollbar-border-size: 1px !default;
+$scrollbar-track-color: rgba(0, 0, 0, 0.15) !default;
+$scrollbar-thumb-color: #A6A6A647 !default;
+$scrollbar-thumb-hover-color: #A6A6A659 !default;
+$scrollbar-thumb-active-color: #A6A6A659 !default;
+
+::-webkit-scrollbar {
+  width: $scrollbar-size;
+  height: $scrollbar-size;
+  background: $scrollbar-track-color;
+}
+::-webkit-scrollbar-track {
+  border-radius: 0;
+  background: $scrollbar-track-color;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: $scrollbar-size;
+  background: $scrollbar-thumb-color;
+  background-clip: padding-box;
+  padding: $scrollbar-border-size;
+  border: $scrollbar-border-size solid rgba(0, 0, 0, 0);
+  transition: background-color 0.5s linear;
+
+  &:hover {
+    background: $scrollbar-thumb-hover-color;
+    background-clip: padding-box;
+    padding: $scrollbar-border-size;
+    border: $scrollbar-border-size solid rgba(0, 0, 0, 0);
+  }
+  &:active {
+    background: $scrollbar-thumb-active-color;
+    background-clip: padding-box;
+    padding: $scrollbar-border-size;
+    border: $scrollbar-border-size solid rgba(0, 0, 0, 0);
+  }
+}

@@ -19,6 +19,11 @@ export const useEditorStore = defineStore("editor", {
           refs: []
         }
       ]
+    },
+    preferences: {
+      dark: true,
+      theme: 'dracula',
+      split: 25.0,
     }
   }),
   getters: {
@@ -33,6 +38,18 @@ export const useEditorStore = defineStore("editor", {
     },
     getPositions(state) {
       return state.positions;
+    },
+    getPreferences(state) {
+      return state.preferences;
+    },
+    getDark(state) {
+      return state.preferences.dark;
+    },
+    getTheme(state) {
+      return state.preferences.theme;
+    },
+    getSplit(state) {
+      return state.preferences.split;
     }
   },
   actions: {
@@ -56,6 +73,32 @@ export const useEditorStore = defineStore("editor", {
       } catch (e) {
         // do nothing
       }
+    },
+    updatePreferences(preferences) {
+      this.$patch({
+        preferences: preferences
+      })
+    },
+    updateDark(dark) {
+      this.$patch({
+        preferences: {
+          dark: dark
+        }
+      })
+    },
+    updateTheme(theme) {
+      this.$patch({
+        preferences: {
+          theme
+        }
+      })
+    },
+    updateSplit(split) {
+      this.$patch({
+        preferences:{
+          split
+        }
+      })
     }
   }
 });

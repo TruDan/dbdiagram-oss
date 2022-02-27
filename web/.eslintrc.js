@@ -4,6 +4,9 @@ module.exports = {
     browser: true,
     node: true
   },
+  globals: {
+    ace: true
+  },
   extends: [
     "plugin:vue/vue3-essential",
     "eslint:recommended"
