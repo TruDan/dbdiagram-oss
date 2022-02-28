@@ -1,3 +1,6 @@
+/* eslint-ignore */
+/* eslint-env browser */
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:
  *

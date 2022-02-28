@@ -7,12 +7,19 @@
 // https://quasar.dev/quasar-cli/quasar-conf-js
 
 /* eslint-env node */
-const ESLintPlugin = require("eslint-webpack-plugin");
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { configure } = require("quasar/wrappers");
 
 module.exports = configure(function (ctx) {
   return {
-    supportTS: true,
+    supportTS: {
+      tsCheckerConfig: {
+        eslint: {
+          enabled: true,
+          files: './src/**/*.{ts,tsx,js,jsx,vue}'
+        }
+      }
+    },
     boot: [
       "i18n",
       "ace",
@@ -36,9 +43,7 @@ module.exports = configure(function (ctx) {
     build: {
       env: require("dotenv").config().parsed,
       vueRouterMode: "history",
-      chainWebpack(chain) {
-        chain.plugin("eslint-webpack-plugin")
-          .use(ESLintPlugin, [{ extensions: ["js", "vue"] }]);
+      chainWebpack(/* chain */) {
       }
     },
     devServer: {
@@ -49,7 +54,9 @@ module.exports = configure(function (ctx) {
       open: true // opens browser window automatically
     },
     framework: {
-      config: {},
+      config: {
+
+      },
       iconSet: "material-icons",
       // lang: 'en-US', // Quasar language pack
       plugins: [
@@ -58,12 +65,31 @@ module.exports = configure(function (ctx) {
     },
 
     animations: "all",
+    ssr: {
+      pwa: false,
+
+      // manualStoreHydration: true,
+      // manualPostHydrationTrigger: true,
+
+      prodPort: 3000, // The default port that the production server should use
+      // (gets superseded if process.env.PORT is specified at runtime)
+
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+      // Tell browser when a file from the server should expire from cache (in ms)
+
+      chainWebpackWebserver (/* chain */) {
+        //
+      },
+
+      middlewares: [
+        ctx.prod ? 'compression' : '',
+        'render' // keep this as last one
+      ]
+    },
     pwa: {
       workboxPluginMode: "GenerateSW", // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
-      chainWebpackCustomSW(chain) {
-        chain.plugin("eslint-webpack-plugin")
-          .use(ESLintPlugin, [{ extensions: ["js"] }]);
+      chainWebpackCustomSW(/* chain */) {
       },
       manifest: {
         name: "DB Diagram OSS",
@@ -102,6 +128,9 @@ module.exports = configure(function (ctx) {
         ]
       }
     },
+    cordova: {
+
+    },
     capacitor: {
       hideSplashscreen: true
     },
@@ -123,13 +152,16 @@ module.exports = configure(function (ctx) {
       builder: {
         appId: "dbdiagram-oss"
       },
-      chainWebpackMain(chain) {
-        chain.plugin("eslint-webpack-plugin")
-          .use(ESLintPlugin, [{ extensions: ["js"] }]);
+      // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
+      chainWebpack (/* chain */) {
+        // do something with the Electron main process Webpack cfg
+        // extendWebpackMain also available besides this chainWebpackMain
       },
-      chainWebpackPreload(chain) {
-        chain.plugin("eslint-webpack-plugin")
-          .use(ESLintPlugin, [{ extensions: ["js"] }]);
+
+      // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
+      chainWebpackPreload (/* chain */) {
+        // do something with the Electron main process Webpack cfg
+        // extendWebpackPreload also available besides this chainWebpackPreload
       }
     }
   };
