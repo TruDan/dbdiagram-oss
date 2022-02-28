@@ -131,7 +131,7 @@ ace.define("ace/mode/dbml_highlight_rules", ["require","exports","module","ace/l
       }],
       "#keywords": [{
         token: "keyword.dbml",
-        regex: /\b(?:as|by|bool|boolean|bit|blob|decimal|double|enum|float|long|longblob|longtext|medium|mediumblob|mediumint|mediumtext|time|timestamp|timestamptz|tinyblob|tinyint|tinytext|text|bigint|int|int1|int2|int3|int4|int8|integer|float|float4|float8|double|char|varbinary|varchar|varcharacter|precision|date|datetime|year|unsigned|signed|numeric|ucase|lcase|mid|len|round|rank|now|format|coalesce|ifnull|isnull|nvl)\b/
+        regex: /\b(?:guid|uuid|as|by|bool|boolean|bit|blob|decimal|double|enum|float|long|longblob|longtext|medium|mediumblob|mediumint|mediumtext|time|timestamp|timestamptz|tinyblob|tinyint|tinytext|text|bigint|int|int1|int2|int3|int4|int8|integer|float|float4|float8|double|char|varbinary|varchar|varcharacter|precision|date|datetime|year|unsigned|signed|numeric|ucase|lcase|mid|len|round|rank|now|format|coalesce|ifnull|isnull|nvl)\b/
       }],
       "#mlstrings": [{
         token: "string.quoted.single.dbml",
@@ -180,7 +180,7 @@ ace.define("ace/mode/dbml_highlight_rules", ["require","exports","module","ace/l
         include: "#btstrings"
       }],
       "#structures": [{
-        token: "entity.name.type.dbml",
+        token: "storage.entity.class.name.type.dbml",
         regex: /\b(?:[pP]roject|[tT]able|[rR]ef|[eE]num|[iI]ndexes|[nN]ote|[tT]able[gG]roup)\b/,
         comment: "Main data structure tags"
       }]
@@ -382,7 +382,7 @@ ace.define("ace/mode/folding/cstyle", ["require", "exports", "module", "ace/lib/
 
 });
 
-ace.define('ace/mode/dbml', ["require","exports","module","ace/lib/oop","ace/mode/text", "ace/mode/dbml_highlighting_rules", "ace/mode/matching_brace_outdent", "ace/mode/behaviour/cstyle", "ace/mode/folding/cstyle"], function(require, exports, module) {
+ace.define('ace/mode/dbml', ["require","exports","module","ace/lib/oop","ace/mode/text", "ace/mode/dbml_highlighting_rules", "ace/mode/matching_brace_outdent", "ace/range", "ace/mode/behaviour/cstyle", "ace/mode/folding/cstyle"], function(require, exports, module) {
   "use strict";
 
 
@@ -390,19 +390,62 @@ ace.define('ace/mode/dbml', ["require","exports","module","ace/lib/oop","ace/mod
   var TextMode = require("./text").Mode;
   var DBMLHighlightRules = require("./dbml_highlight_rules").DBMLHighlightRules;
   var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
+  var Range = require("../range").Range;
   var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
   var CStyleFoldMode = require("./folding/cstyle").FoldMode;
 
   var Mode = function() {
     this.HighlightRules = DBMLHighlightRules;
+
     this.$outdent = new MatchingBraceOutdent();
     this.$behaviour = new CstyleBehaviour();
+
     this.foldingRules = new CStyleFoldMode();
   };
   oop.inherits(Mode, TextMode);
 
   (function() {
     this.lineCommentStart = "//";
+
+    this.getNextLineIndent = function (state, line, tab) {
+      var indent = this.$getIndent(line);
+
+      var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
+      var tokens = tokenizedLine.tokens;
+      var endState = tokenizedLine.state;
+
+      if (tokens.length && tokens[tokens.length - 1].type == "comment") {
+        return indent;
+      }
+
+      if (state == "start") {
+        var match = line.match(/^.*[\{\(\[]\s*$/);
+        if (match) {
+          indent += tab;
+        }
+      } else if (state == "doc-start") {
+        if (endState == "start") {
+          return "";
+        }
+        var match = line.match(/^\s*(\/?)\*/);
+        if (match) {
+          if (match[1]) {
+            indent += " ";
+          }
+          indent += "* ";
+        }
+      }
+
+      return indent;
+    };
+
+    this.checkOutdent = function (state, line, input) {
+      return this.$outdent.checkOutdent(line, input);
+    };
+
+    this.autoOutdent = function (state, doc, row) {
+      this.$outdent.autoOutdent(doc, row);
+    };
 
     this.$id = "ace/mode/dbml"
   }).call(Mode.prototype);

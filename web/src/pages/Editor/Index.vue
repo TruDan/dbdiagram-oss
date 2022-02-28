@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <q-page >
     <q-splitter v-model="split"
                 :limits="[10,75]"
                 class="editor-wrapper">

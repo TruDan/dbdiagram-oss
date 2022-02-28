@@ -55,7 +55,9 @@ export class DbGraph extends events.EventEmitter {
 
   private _didChange: boolean = false;
 
-  private _zoomSensitivity: number = 0.25;
+  private _zoomSensitivity: number = 0.04;
+  private _zoomMin: number = 0.25;
+  private _zoomMax: number = 1.75;
 
   constructor(element: HTMLElement) {
     super();
@@ -287,7 +289,7 @@ export class DbGraph extends events.EventEmitter {
   }
 
   private onPointerMove(evt: dia.Event, x: number, y: number) {
-    if(this._blankPointerDown) {
+    if (this._blankPointerDown) {
       const p = this._blankPointerDownPoint;
       const np = {x: evt.offsetX || 0, y: evt.offsetY || 0};
       const d = {
@@ -299,7 +301,7 @@ export class DbGraph extends events.EventEmitter {
   }
 
   private onBlankPointerDown(evt: dia.Event, x: number, y: number): void {
-    const s = V(this._paper.viewport).scale();
+    const s = this._paper.scale();
     this._blankPointerDown = true;
     this._blankPointerDownPoint = {x: x * s.sx, y: y * s.sy};
   }
@@ -334,11 +336,20 @@ export class DbGraph extends events.EventEmitter {
   }
 
   private zoom(x: number, y: number, delta: number): void {
-    const s = V(this._paper.viewport).scale();
+    const s = this._paper.scale();
+    // const s = V(this._paper.viewport).scale();
     const o = {x, y};
-    console.log("onBlankMouseWheel", s, delta, x, y);
 
-    V(this._paper.viewport).scale(s.sx + (delta * this._zoomSensitivity), s.sy + (delta * this._zoomSensitivity));
+    const newScale = {
+      sx: s.sx * Math.pow(2, delta * this._zoomSensitivity),
+      sy: s.sy * Math.pow(2, delta * this._zoomSensitivity)
+    };
+
+    // constrain to min/max
+    newScale.sx = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sx));
+    newScale.sy = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sy));
+
+    this._paper.scale(newScale.sx, newScale.sy);
   }
 
   private emitPositions(): void {
