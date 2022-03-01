@@ -4,5 +4,11 @@
     "baseUrl": ".",
     "noImplicitAny": false,
     "declaration": true
-  }
+  },
+  "exclude": [
+    "/dist",
+    ".quasar",
+    "node_modules",
+    "public"
+  ]
 }

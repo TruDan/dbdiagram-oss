@@ -60,7 +60,8 @@ module.exports = configure(function (ctx) {
       iconSet: "material-icons",
       // lang: 'en-US', // Quasar language pack
       plugins: [
-        "Notify"
+        "Notify",
+        "Dialog"
       ]
     },
 

@@ -23,7 +23,7 @@ export default ({ store }) => {
 
   const throttledDatabaseUpdate = debounce(() => store.updateDatabase(), 250);
   const handlePreferencesUpdate = (payload) => {
-    if(payload.dark) {
+    if(payload.dark !== undefined) {
       q.dark.set(payload.dark);
     }
   }
