@@ -41,7 +41,6 @@ export class TableElement extends dia.Element {
         },
         headerText: {
           text: 'Label',
-
           textVerticalAnchor: 'top'
         }
       },

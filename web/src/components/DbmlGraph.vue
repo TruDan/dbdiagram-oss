@@ -59,7 +59,7 @@
       const locateField = (fieldId) => {
         const field = editor.findField(fieldId);
         if(field) {
-          emit('locate:field', field); 
+          emit('locate:field', field);
         }
       }
 
@@ -74,8 +74,8 @@
         }
       });
 
-      const watchSchema = watch(props.schema, (newValue) =>  graphRef.value.syncSchema(newValue, props.positions))
-      const watchPositions = watch(props.positions, (newValue) =>  graphRef.value.syncPositions(newValue))
+      const watchSchema = watch(() => props.schema, (newValue) =>  graphRef.value.syncSchema(newValue, props.positions))
+      const watchPositions = watch(() => props.positions, (newValue) =>  graphRef.value.syncPositions(newValue))
 
       return {
         paper,

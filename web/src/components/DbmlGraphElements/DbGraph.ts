@@ -153,7 +153,8 @@ export class DbGraph extends events.EventEmitter {
     return this._graph;
   }
 
-  public syncSchema(schema: Schema, positions: DbGraphPositions | undefined): void {
+  public syncSchema(schema: Schema | undefined, positions: DbGraphPositions | undefined): void {
+    if(!schema) return;
     this.paper.freeze()
 
     this.syncTables(schema.tables)
