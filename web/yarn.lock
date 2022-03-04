@@ -1332,7 +1332,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/jquery@*":
+"@types/jquery@*", "@types/jquery@^3.5.14":
   version "3.5.14"
   resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-3.5.14.tgz#ac8e11ee591e94d4d58da602cb3a5a8320dee577"
   integrity sha512-X1gtMRMbziVQkErhTQmSe2jFwwENA/Zr+PprCkF63vFq+Yt5PZ4AlKqgmeNlwgn7dhsXEK888eIW2520EpC+xg==
@@ -4205,7 +4205,7 @@ jointjs@^3.5.3:
     jquery "~3.6.0"
     lodash "~4.17.21"
 
-jquery@~3.6.0:
+jquery@^3.6.0, jquery@~3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.0.tgz#c72a09f15c1bdce142f49dbf1170bdf8adac2470"
   integrity sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==

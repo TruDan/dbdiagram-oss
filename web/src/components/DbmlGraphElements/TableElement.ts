@@ -7,7 +7,7 @@ import {RefLink} from "components/DbmlGraphElements/RefLink";
 
 export const itemPosition = (portsArgs: dia.Element.Port[], elBBox: dia.BBox): g.Point[] => {
   return portsArgs.map((_port: dia.Element.Port, index: number, {length}) => {
-    const bottom = elBBox.height - (LIST_ITEM_HEIGHT/2);
+    const bottom = elBBox.height - (LIST_ITEM_HEIGHT / 2);
     const y = (length - 1 - index) * (LIST_ITEM_HEIGHT);
     return new g.Point(0, bottom - y);
   });
@@ -21,14 +21,17 @@ export class TableElement extends dia.Element {
       type: 'db.Table',
       size: {width: LIST_ITEM_WIDTH, height: 0},
       attrs: {
-        root: {magnet: false},
+        root: {
+          magnet: false,
+          'class': 'db-table'
+        },
         body: {
-          'class': 'table__bg',
+          'class': 'db-table__bg',
           width: 'calc(w)',
           height: 'calc(h)'
         },
         header: {
-          'class': 'table-header',
+          'class': 'db-table-header',
           width: 'calc(w)',
           height: 'calc(h)',
         },
@@ -68,7 +71,7 @@ export class TableElement extends dia.Element {
             position: itemPosition,
             attrs: {
               root: {
-                'class': 'table-field',
+                'class': 'db-field',
               },
               fieldBody: {
                 magnet: 'active',
@@ -77,12 +80,12 @@ export class TableElement extends dia.Element {
                 y: 'calc(-0.5*h)'
               },
               fieldName: {
-                'class': 'table-field__name',
+                'class': 'db-field__name',
                 x: PADDING_M,
                 textVerticalAnchor: 'middle'
               },
               fieldType: {
-                'class': 'table-field__type',
+                'class': 'db-field__type',
                 x: `calc(w-${PADDING_M})`,
                 textVerticalAnchor: 'middle'
               },
@@ -130,7 +133,7 @@ export class TableElement extends dia.Element {
       this.addPort(port);
     }
 
-    if(port.attrs && port.attrs.fieldName && port.attrs.fieldType) {
+    if (port.attrs && port.attrs.fieldName && port.attrs.fieldType) {
       port.attrs.fieldName.text = field.name;
       port.attrs.fieldType.text = field.type.type_name;
     }
@@ -144,15 +147,20 @@ export class TableElement extends dia.Element {
   setHeaderText(headerText) {
     this.attr('headerText.text', headerText);
   }
+
   setHeaderColor(headerColor) {
     this.attr('headerBody.fill', headerColor);
   }
+
 }
 
 export const createFieldPort = (field: Field) => ({
   id: `field-${field.id}`,
   group: "fields",
   attrs: {
+    root: {
+      fieldId: field.id,
+    },
     fieldName: {
       text: field.name
     },
@@ -165,6 +173,9 @@ export const createFieldPort = (field: Field) => ({
 export const createTableElement = (table: Table) => new TableElement({
   id: `table-${table.id}`,
   attrs: {
+    root: {
+      tableId: table.id,
+    },
     headerBody: {
       fill: table.headerColor
     },

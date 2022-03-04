@@ -1,10 +1,11 @@
 <template>
-  <q-page >
+  <q-page>
     <q-splitter v-model="split"
                 :limits="[10,75]"
                 class="editor-wrapper">
       <template #before>
-        <dbml-editor class="db-code-editor"
+        <dbml-editor ref="editorRef"
+                     class="db-code-editor"
                      v-model:source="sourceText"
         />
       </template>
@@ -13,6 +14,8 @@
           class="db-graph-view"
           :schema="schema"
           v-model:positions="positions"
+          @locate:table="locateElement"
+          @locate:field="locateElement"
         />
       </template>
     </q-splitter>
@@ -33,6 +36,7 @@
       DbmlGraph
     },
     setup () {
+      const editorRef = ref(null);
       const editor = useEditorStore()
       const q = useQuasar()
 
@@ -57,12 +61,21 @@
 
       const schema = computed(() => editor.getDatabase?.schemas?.find(x => true))
 
+      const locateElement = (element) => {
+        const startToken = element.token;
+        const endToken = element.token;
+
+        editorRef.value.highlightTokenRange({row: startToken.line, col: startToken.column}, {row: endToken.line, col: endToken.column})
+      };
+
       return {
+        editorRef,
         sourceText,
         schema,
         positions,
         preferences,
-        split
+        split,
+        locateElement
       }
     }
   }

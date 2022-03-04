@@ -17,6 +17,7 @@ module.exports = {
     // node: true
   },
   globals: {
+    '$': true
   },
   extends: [
     'plugin:@typescript-eslint/recommended',

@@ -1,29 +1,40 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide" :seamless="tab === 'theme'">
     <q-card class="q-dialog-plugin ace-preferences-dialog">
+      <dialog-layout>
+        <template #header>
+          <q-toolbar>
+            <q-tabs v-model="tab">
+              <q-tab name="general">General</q-tab>
+              <q-tab name="theme">Theme</q-tab>
+            </q-tabs>
+          </q-toolbar>
+        </template>
 
-      <q-tabs v-model="tab">
-        <q-tab name="general">General</q-tab>
-        <q-tab name="theme">Theme</q-tab>
-      </q-tabs>
+        <q-tab-panels v-model="tab">
+          <q-tab-panel name="general"></q-tab-panel>
+          <q-tab-panel name="theme">
+            <div class="flex row justify-evenly">
 
-      <q-tab-panels v-model="tab">
-        <q-tab-panel name="general"></q-tab-panel>
-        <q-tab-panel name="theme">
-          <div class="flex row justify-evenly">
-            <ace-theme-preview-card v-for="theme of themes"
-                                    :key="theme"
-                                    :theme="theme"
-                                    :width="'30%'"
-            />
-          </div>
-        </q-tab-panel>
-      </q-tab-panels>
+              <ace-theme-preview-card v-for="theme of themes"
+                                      :key="theme"
+                                      :theme="theme"
+                                      :width="'30%'"
+                                      :active="preferences.theme === theme.name"
+                                      @click="() => setTheme(theme)"
+              />
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
 
-      <q-card-actions align="right">
-        <q-btn color="primary" label="OK" @click="onOKClick"/>
-        <q-btn color="primary" label="Cancel" @click="onCancelClick"/>
-      </q-card-actions>
+        <template #footer>
+          <q-toolbar>
+            <q-space/>
+            <q-btn flat color="primary" label="OK" @click="onOKClick"/>
+            <q-btn flat color="primary" label="Cancel" @click="onCancelClick"/>
+          </q-toolbar>
+        </template>
+      </dialog-layout>
     </q-card>
   </q-dialog>
 </template>
@@ -33,10 +44,15 @@
   import { ref } from 'vue'
   import ace from 'ace-builds'
   import AceThemePreviewCard from './AceThemePreviewCard'
+  import { useEditorStore } from '../store/editor'
+  import DialogLayout from '../layouts/DialogLayout'
 
   export default {
     name: 'AcePreferencesDialog',
-    components: { AceThemePreviewCard },
+    components: {
+      DialogLayout,
+      AceThemePreviewCard
+    },
     props: {},
     emits: [
       ...useDialogPluginComponent.emits
@@ -49,11 +65,16 @@
         onDialogOK,
         onDialogCancel
       } = useDialogPluginComponent()
-      const themelist = ace.require('ace/ext/themelist')
 
-      console.log(ace)
+      const editor = useEditorStore()
+      const themelist = ace.require('ace/ext/themelist')
       const themes = ref(themelist.themes)
+
       return {
+        setTheme (newTheme) {
+          editor.preferences.theme = newTheme.name
+          console.log(themelist, themelist.themesByName[editor.preferences.theme])
+        },
         dialogRef,
         onDialogHide,
         onOKClick () {
@@ -62,7 +83,8 @@
         onCancelClick: onDialogCancel,
 
         tab: ref('general'),
-        themes
+        themes,
+        preferences: editor.preferences
       }
     }
   }
@@ -72,6 +94,6 @@
   .ace-preferences-dialog {
     width: 80vw;
     max-width: 800px;
-    max-height: 65vh;
+    height: 50vh;
   }
 </style>

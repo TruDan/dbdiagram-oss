@@ -1,12 +1,12 @@
-import { defineStore } from "pinia";
-import { Parser } from "@dbml/core";
-import { throttle } from "quasar";
+import { defineStore } from 'pinia'
+import { Parser } from '@dbml/core'
+import { throttle } from 'quasar'
 
-export const useEditorStore = defineStore("editor", {
+export const useEditorStore = defineStore('editor', {
   state: () => ({
     source: {
-      format: "dbml",
-      text: ""
+      format: 'dbml',
+      text: ''
     },
     positions: {
       tablePositions: [],
@@ -27,78 +27,103 @@ export const useEditorStore = defineStore("editor", {
     }
   }),
   getters: {
-    getSourceFormat(state) {
-      return state.source.format;
+    findField (state) {
+      return ((fieldId) => {
+        let field = null
+        for (const schema of state.database.schemas) {
+          for (const table of schema.tables) {
+            field = table.fields.find(f => f.id === fieldId)
+            if (field) {
+              return field
+            }
+          }
+        }
+        return undefined
+      })
     },
-    getSourceText(state) {
-      return state.source.text;
+    findTable (state) {
+      return ((tableId) => {
+        let table = null;
+        for (const schema of state.database.schemas) {
+          table = schema.tables.find(t => t.id === tableId)
+          if(table)
+            return table;
+        }
+        return undefined;
+      })
     },
-    getDatabase(state) {
-      return state.database;
+    getSourceFormat (state) {
+      return state.source.format
     },
-    getPositions(state) {
-      return state.positions;
+    getSourceText (state) {
+      return state.source.text
     },
-    getPreferences(state) {
-      return state.preferences;
+    getDatabase (state) {
+      return state.database
     },
-    getDark(state) {
-      return state.preferences.dark;
+    getPositions (state) {
+      return state.positions
     },
-    getTheme(state) {
-      return state.preferences.theme;
+    getPreferences (state) {
+      return state.preferences
     },
-    getSplit(state) {
-      return state.preferences.split;
+    getDark (state) {
+      return state.preferences.dark
+    },
+    getTheme (state) {
+      return state.preferences.theme
+    },
+    getSplit (state) {
+      return state.preferences.split
     }
   },
   actions: {
-    updateSourceText(sourceText) {
-      if (sourceText === this.source.text) return;
+    updateSourceText (sourceText) {
+      if (sourceText === this.source.text) return
       this.$patch({
         source: {
           text: sourceText
         }
       })
     },
-    updatePositions(positions) {
+    updatePositions (positions) {
       this.$patch({
         positions: positions
-      });
+      })
     },
-    updateDatabase() {
+    updateDatabase () {
       try {
-        const database = Parser.parse(this.source.text, this.source.format);
-        this.database = database;
+        const database = Parser.parse(this.source.text, this.source.format)
+        this.database = database
       } catch (e) {
         // do nothing
       }
     },
-    updatePreferences(preferences) {
+    updatePreferences (preferences) {
       this.$patch({
         preferences: preferences
       })
     },
-    updateDark(dark) {
+    updateDark (dark) {
       this.$patch({
         preferences: {
           dark: dark
         }
       })
     },
-    updateTheme(theme) {
+    updateTheme (theme) {
       this.$patch({
         preferences: {
           theme
         }
       })
     },
-    updateSplit(split) {
+    updateSplit (split) {
       this.$patch({
-        preferences:{
+        preferences: {
           split
         }
       })
     }
   }
-});
+})

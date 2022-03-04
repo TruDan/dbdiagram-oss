@@ -1,3 +1,4 @@
+import jQuery from "jquery";
 import {dia, layout, linkTools, shapes, V, Vectorizer} from "jointjs";
 import Backbone from "backbone";
 import Table from "@dbml/core/types/model_structure/table";
@@ -33,7 +34,10 @@ export interface RefVertices {
 }
 
 interface DbGraphEvents {
-  'update:positions': (positions: DbGraphPositions) => void;
+  'update:positions': (positions: DbGraphPositions) => void,
+  'editor:table:locate': (tableId: number) => void,
+  'editor:field:locate': (fieldId: number) => void,
+  'editor:reference:locate': (referenceId: number) => void,
 }
 
 export interface DbGraph {
@@ -120,18 +124,26 @@ export class DbGraph extends events.EventEmitter {
       'blank:pointerup': this.onBlankPointerUp.bind(this),
       'element:pointerdown': this.onElementPointerDown.bind(this),
       'element:pointerup': this.onElementPointerUp.bind(this),
+      // "element:mouseenter": this.onElementMouseEnter.bind(this),
+      // "element:mouseleave": this.onElementMouseLeave.bind(this),
+      'cell:mouseenter': this.onCellMouseEnter.bind(this),
+      'cell:mouseleave': this.onCellMouseLeave.bind(this),
       'link:mouseenter': this.onLinkMouseEnter.bind(this),
       'link:mouseleave': this.onLinkMouseLeave.bind(this),
       'blank:pointermove': this.onPointerMove.bind(this),
       'element:mousewheel': this.onElementMouseWheel.bind(this),
       'blank:mousewheel': this.onBlankMouseWheel.bind(this)
-    })
+    });
+
+    this._paper.$el.on('mouseenter', '.db-field', this.onTableFieldMouseEnter.bind(this))
+    this._paper.$el.on('mouseleave', '.db-field', this.onTableFieldMouseLeave.bind(this))
+    this._paper.$el.on('dblclick', '.db-table-header', this.onTableHeaderDoubleClick.bind(this))
+    this._paper.$el.on('dblclick', '.db-field', this.onTableFieldDoubleClick.bind(this))
 
     this._graph.on({
       'change': this.onGraphChange.bind(this)
     })
   }
-
 
   get paper(): dia.Paper {
     return this._paper;
@@ -288,6 +300,31 @@ export class DbGraph extends events.EventEmitter {
     this._paper.scaleContentToFit({padding: 50})
   }
 
+  private zoom(x: number, y: number, delta: number): void {
+    const s = this._paper.scale();
+    // const s = V(this._paper.viewport).scale();
+    const o = {x, y};
+
+    const newScale = {
+      sx: s.sx * Math.pow(2, delta * this._zoomSensitivity),
+      sy: s.sy * Math.pow(2, delta * this._zoomSensitivity)
+    };
+
+    // constrain to min/max
+    newScale.sx = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sx));
+    newScale.sy = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sy));
+
+    this._paper.scale(newScale.sx, newScale.sy);
+  }
+
+  private onGraphChange(cell): void {
+    if (this._elementPointerDown) {
+      this._didChange = true;
+      const positions = this.exportPositions();
+      this.emit('update:positions', positions);
+    }
+  }
+
   private onPointerMove(evt: dia.Event, x: number, y: number) {
     if (this._blankPointerDown) {
       const p = this._blankPointerDownPoint;
@@ -319,11 +356,52 @@ export class DbGraph extends events.EventEmitter {
     this._elementPointerDown = false;
   }
 
+  private onTableHeaderDoubleClick(evt: JQuery.DoubleClickEvent): void {
+    const el = jQuery(evt.currentTarget);
+    evt.stopPropagation();
+    const closestTable = el.closest('.db-table')
+    const tableId = closestTable.attr('table-id');
+    if(tableId)
+      this.emit('editor:table:locate', Number(tableId));
+  }
+  private onTableFieldMouseEnter(evt: JQuery.MouseEnterEvent): void {
+    const el = jQuery(evt.currentTarget);
+    evt.stopPropagation();
+
+    el.toggleClass('db-field--highlight', true);
+  }
+
+  private onTableFieldMouseLeave(evt: JQuery.MouseLeaveEvent): void {
+    const el = jQuery(evt.currentTarget);
+    evt.stopPropagation();
+
+    el.toggleClass('db-field--highlight', false);
+  }
+
+  private onTableFieldDoubleClick(evt: JQuery.DoubleClickEvent): void {
+    const el = jQuery(evt.currentTarget);
+    evt.stopPropagation();
+    const fieldId = el.attr('field-id');
+
+    if(fieldId)
+      this.emit('editor:field:locate', Number(fieldId));
+  }
+
+  private onCellMouseEnter(cellView: dia.CellView, evt: dia.Event): void {
+    cellView.$el.toggleClass('db-table--highlight', true);
+  }
+
+  private onCellMouseLeave(cellView: dia.CellView, evt: dia.Event): void {
+    cellView.$el.toggleClass('db-table--highlight', false);
+  }
+
   private onLinkMouseEnter(cellView: dia.LinkView, evt: dia.Event): void {
+    cellView.$el.toggleClass('db-relation--highlight', true);
     cellView.addTools(this._linkTools);
   }
 
   private onLinkMouseLeave(cellView: dia.LinkView, evt: dia.Event): void {
+    cellView.$el.toggleClass('db-relation--highlight', false);
     cellView.removeTools();
   }
 
@@ -335,33 +413,4 @@ export class DbGraph extends events.EventEmitter {
     this.zoom(x, y, delta);
   }
 
-  private zoom(x: number, y: number, delta: number): void {
-    const s = this._paper.scale();
-    // const s = V(this._paper.viewport).scale();
-    const o = {x, y};
-
-    const newScale = {
-      sx: s.sx * Math.pow(2, delta * this._zoomSensitivity),
-      sy: s.sy * Math.pow(2, delta * this._zoomSensitivity)
-    };
-
-    // constrain to min/max
-    newScale.sx = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sx));
-    newScale.sy = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sy));
-
-    this._paper.scale(newScale.sx, newScale.sy);
-  }
-
-  private emitPositions(): void {
-    const positions = this.exportPositions();
-    this.emit('update:positions', positions);
-  }
-
-
-  private onGraphChange(cell): void {
-    if (this._elementPointerDown) {
-      this._didChange = true;
-      this.emitPositions();
-    }
-  }
 }

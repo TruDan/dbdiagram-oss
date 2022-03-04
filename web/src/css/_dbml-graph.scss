@@ -66,11 +66,22 @@ $table-field-padding-y: 9px !default;
 
   background-color: var(--chart-bg-color);
 
+  > svg {
+    cursor: grab;
 
-  .table {
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .db-table {
     &-header {
       rect {
         cursor: grab;
+
+        &:active {
+          cursor: grabbing;
+        }
 
         &:not([fill]), &[fill="undefined"]{
           fill: var(--table-header-color);
@@ -87,11 +98,16 @@ $table-field-padding-y: 9px !default;
     }
   }
 
-  .table-field {
+  .db-field {
     vertical-align: middle;
+    cursor: default;
 
     rect {
       fill: var(--field-bg-color);
+    }
+
+    text {
+      pointer-events: none;
     }
 
     &__name {
@@ -103,6 +119,12 @@ $table-field-padding-y: 9px !default;
       font-size: 12px;
       fill: var(--field-type-color);
       text-anchor: end;
+    }
+
+    &.db-field--highlight {
+      rect {
+        fill: var(--highlight-field-color);
+      }
     }
   }
 
