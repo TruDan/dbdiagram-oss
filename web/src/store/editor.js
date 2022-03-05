@@ -6,7 +6,19 @@ export const useEditorStore = defineStore('editor', {
   state: () => ({
     source: {
       format: 'dbml',
-      text: ''
+      text: '',
+      markers: {
+        selection: {
+          start: {
+            row: null,
+            col: null
+          },
+          end: {
+            row: null,
+            col: null
+          },
+        }
+      }
     },
     positions: {
       tablePositions: [],
@@ -122,6 +134,18 @@ export const useEditorStore = defineStore('editor', {
       this.$patch({
         preferences: {
           split
+        }
+      })
+    },
+    updateSelectionMarker(start, end) {
+      this.$patch({
+        source: {
+          markers: {
+            selection: {
+              start: start,
+              end: end
+            }
+          }
         }
       })
     }

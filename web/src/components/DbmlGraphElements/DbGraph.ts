@@ -153,13 +153,18 @@ export class DbGraph extends events.EventEmitter {
     return this._graph;
   }
 
-  public syncSchema(schema: Schema | undefined, positions: DbGraphPositions | undefined): void {
-    if(!schema) return;
+  public syncSchema(schema: Schema | {tables: Array<any>, refs: Array<any>} | undefined, positions: DbGraphPositions | undefined): void {
     this.paper.freeze()
+
+    if (!schema) {
+      schema = {
+        tables: [],
+        refs: []
+      };
+    }
 
     this.syncTables(schema.tables)
     this.syncRefs(schema.refs)
-
     if (positions) {
       this.syncPositions(positions)
     }
@@ -362,9 +367,10 @@ export class DbGraph extends events.EventEmitter {
     evt.stopPropagation();
     const closestTable = el.closest('.db-table')
     const tableId = closestTable.attr('table-id');
-    if(tableId)
+    if (tableId)
       this.emit('editor:table:locate', Number(tableId));
   }
+
   private onTableFieldMouseEnter(evt: JQuery.MouseEnterEvent): void {
     const el = jQuery(evt.currentTarget);
     evt.stopPropagation();
@@ -384,7 +390,7 @@ export class DbGraph extends events.EventEmitter {
     evt.stopPropagation();
     const fieldId = el.attr('field-id');
 
-    if(fieldId)
+    if (fieldId)
       this.emit('editor:field:locate', Number(fieldId));
   }
 

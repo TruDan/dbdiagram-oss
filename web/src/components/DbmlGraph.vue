@@ -42,29 +42,29 @@
     },
     emits: [
       'update:positions',
-      'locate:table',
-      'locate:field',
     ],
-    setup (props, { emit }) {
+    setup (props) {
       const paper = ref(null)
       const graphRef = ref(null)
       const editor = useEditorStore()
 
       const locateTable = (tableId) => {
-        const table = editor.findTable(tableId);
-        if(table) {
-          emit('locate:table', table);
+        const table = editor.findTable(tableId)
+        if (table) {
+          const token = table.token
+          editor.updateSelectionMarker(token.start, token.end);
         }
       }
       const locateField = (fieldId) => {
-        const field = editor.findField(fieldId);
-        if(field) {
-          emit('locate:field', field);
+        const field = editor.findField(fieldId)
+        if (field) {
+          const token = field.token
+          editor.updateSelectionMarker(token.start, token.end);
         }
       }
 
       const mounted = onMounted(() => {
-        graphRef.value = new DbGraph(paper.value);
+        graphRef.value = new DbGraph(paper.value)
         graphRef.value.on('update:positions', (newPositions) => emit('update:positions', newPositions))
         graphRef.value.on('editor:table:locate', (tableId) => locateTable(tableId))
         graphRef.value.on('editor:field:locate', (fieldId) => locateField(fieldId))
@@ -72,10 +72,10 @@
         if (props.schema) {
           graphRef.value.syncSchema(props.schema, props.positions)
         }
-      });
+      })
 
-      const watchSchema = watch(() => props.schema, (newValue) =>  graphRef.value.syncSchema(newValue, props.positions))
-      const watchPositions = watch(() => props.positions, (newValue) =>  graphRef.value.syncPositions(newValue))
+      const watchSchema = watch(() => props.schema, (newValue) => graphRef.value.syncSchema(newValue, props.positions))
+      const watchPositions = watch(() => props.positions, (newValue) => graphRef.value.syncPositions(newValue))
 
       return {
         paper,

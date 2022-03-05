@@ -13,7 +13,7 @@
 
 <script>
   import { VAceEditor } from 'vue3-ace-editor'
-  import { computed, ref } from 'vue'
+  import { computed, ref, watch } from 'vue'
   import { useEditorStore } from 'src/store/editor'
   import { Range } from 'ace-builds'
 
@@ -24,7 +24,7 @@
     },
     props: ['source'],
     setup (props, { emit }) {
-      const aceRef = ref({editor: null})
+      let ace = null
       const editor = useEditorStore()
       const currentMarkerRef = ref({
         markerId: null,
@@ -42,26 +42,54 @@
 
       const highlightTokenRange = (start, end) => {
         if (currentMarkerRef.value.markerId) {
-          aceRef.value.editor.session.removeMarker(currentMarkerRef.value.markerId)
-          currentMarkerRef.value.markerId = null;
+          ace.session.removeMarker(currentMarkerRef.value.markerId)
+          currentMarkerRef.value.markerId = null
         }
-        aceRef.value.editor.session.addMarker(new Range(start.row, start.col, end.row, end.col))
+        const range = new Range(start.row - 1, start.col - 1, end.row - 1, end.col - 1)
+        ace.focus()
+        ace.moveCursorTo(start.row - 1, start.col - 1)
+        currentMarkerRef.value.markerId = ace.session.addMarker(range, 'ace_active-line', 'text')
+        console.log('highlightTokenRange', currentMarkerRef.value.markerId, start, end)
       }
+
+      const editorInit = (editor) => {
+        ace = editor
+        ace.on
+      };
 
       const options = ref({
         useWorker: true,
       })
 
+      const subscription = editor.$subscribe((mutation, state) => {
+        if (mutation.storeId === 'editor' && mutation.payload) {
+          if (
+            mutation.payload.source &&
+            mutation.payload.source.markers &&
+            mutation.payload.source.markers.selection
+          ) {
+            const range = editor.source.markers.selection
+            const startToken = range.start
+            const endToken = range.end
+            highlightTokenRange({
+              row: startToken.line,
+              col: startToken.column
+            }, {
+              row: endToken.line,
+              col: endToken.column
+            })
+          }
+        }
+      })
+
       return {
-        aceRef,
         currentMarkerRef,
         sourceCode,
         theme,
         options,
         highlightTokenRange,
-        editorInit(editor){
-          aceRef.value.editor = editor;
-        }
+        editorInit,
+        subscription
       }
     },
   }

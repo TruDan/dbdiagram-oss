@@ -14,8 +14,6 @@
           class="db-graph-view"
           :schema="schema"
           v-model:positions="positions"
-          @locate:table="locateElement"
-          @locate:field="locateElement"
         />
       </template>
     </q-splitter>
@@ -61,21 +59,14 @@
 
       const schema = computed(() => editor.getDatabase?.schemas?.find(x => true))
 
-      const locateElement = (element) => {
-        const startToken = element.token;
-        const endToken = element.token;
 
-        editorRef.value.highlightTokenRange({row: startToken.line, col: startToken.column}, {row: endToken.line, col: endToken.column})
-      };
 
       return {
-        editorRef,
         sourceText,
         schema,
         positions,
         preferences,
-        split,
-        locateElement
+        split
       }
     }
   }
