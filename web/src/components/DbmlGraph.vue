@@ -1,8 +1,10 @@
 <template>
   <div class="dbml-graph-wrapper">
-    <div ref="paper" class="dbml-graph">
+    <v-db-chart v-if="schema"
+                :tables="tables"
+    >
 
-    </div>
+    </v-db-chart>
     <div class="dbml-toolbar-wrapper">
       <q-toolbar class="bg-dark text-white q-btn--rounded">
         <q-btn
@@ -26,10 +28,14 @@
 <script>
   import { DbGraph } from 'components/DbmlGraphElements/DbGraph'
   import { useEditorStore } from '../store/editor'
-  import { onMounted, ref, watch } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
+  import VDbChart from './VDbChart/VDbChart'
 
   export default {
     name: 'DbmlGraph',
+    components: {
+      VDbChart
+    },
     props: {
       schema: {
         type: Object,
@@ -44,8 +50,6 @@
       'update:positions',
     ],
     setup (props) {
-      const paper = ref(null)
-      const graphRef = ref(null)
       const editor = useEditorStore()
 
       const locateTable = (tableId) => {
@@ -63,41 +67,30 @@
         }
       }
 
-      const mounted = onMounted(() => {
-        graphRef.value = new DbGraph(paper.value)
-        graphRef.value.on('update:positions', (newPositions) => emit('update:positions', newPositions))
-        graphRef.value.on('editor:table:locate', (tableId) => locateTable(tableId))
-        graphRef.value.on('editor:field:locate', (fieldId) => locateField(fieldId))
-
-        if (props.schema) {
-          graphRef.value.syncSchema(props.schema, props.positions)
-        }
+      const tables = computed(() => {
+        if(!props.schema) return [];
+        return props.schema.tables.map(table => ({
+          ...table,
+          position: props.positions && props.positions.tablePositions.find(p => p.id === table.id) || {x: 0, y: 0}
+        }))
       })
 
-      const watchSchema = watch(() => props.schema, (newValue) => graphRef.value.syncSchema(newValue, props.positions))
-      const watchPositions = watch(() => props.positions, (newValue) => graphRef.value.syncPositions(newValue))
-
       return {
-        paper,
-        graphRef,
         editor,
-        mounted,
+        tables,
         applyAutoLayout () {
-          graphRef.value.applyAutoLayout()
+          // do nothing
         },
         applyScaleToFit () {
-          graphRef.value.applyScaleToFit()
-        },
-
-        watchSchema,
-        watchPositions
+          // do nothing
+        }
       }
     }
   }
 </script>
 
 <style scoped>
-  .dbml-graph {
+  .dbml-graph, .db-chart {
     height: 100% !important;
     width: 100% !important;
   }

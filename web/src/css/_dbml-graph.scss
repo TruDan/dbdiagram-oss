@@ -1,4 +1,7 @@
 @import "jointjs";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@200..800&display=swap');
+
+$table-font-family: 'Noto Sans Mono', monospace !default;
 $table-border-width: 2 !default;
 
 $table-header-padding-x: 8px !default;
@@ -59,8 +62,8 @@ $table-field-padding-y: 9px !default;
   }
 }
 
-.dbml-graph {
-  font-family: sans-serif;
+.dbml-graph, .db-chart {
+  font-family: $table-font-family;
   font-weight: 400;
   font-size: 13px;
 
@@ -89,8 +92,8 @@ $table-field-padding-y: 9px !default;
       }
 
 
-      text {
-        transform: translate($table-header-padding-x, $table-header-padding-y);
+      text, &__name {
+        transform: translateX(10px) translateY(.35em);
         font-weight: 700;
         font-size: 16px;
         fill: var(--table-header-fg-color);
@@ -104,6 +107,10 @@ $table-field-padding-y: 9px !default;
 
     rect {
       fill: var(--field-bg-color);
+      stroke-width: 1px;
+      stroke: var(--table-stroke-color);
+      stroke-linejoin: miter;
+      stroke-linecap: square;
     }
 
     text {
@@ -113,12 +120,14 @@ $table-field-padding-y: 9px !default;
     &__name {
       fill: var(--field-name-color);
       font-size: 12px;
+      transform: translateX(10px) translateY(.35em);
     }
 
     &__type {
       font-size: 12px;
       fill: var(--field-type-color);
       text-anchor: end;
+      transform: translateX(-10px) translateY(.35em);
     }
 
     &.db-field--highlight {
