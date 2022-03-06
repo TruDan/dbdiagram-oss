@@ -4,10 +4,12 @@ import Field from "@dbml/core/types/model_structure/field";
 import Table from "@dbml/core/types/model_structure/table";
 import Ref from "@dbml/core/types/model_structure/ref";
 import {RefLink} from "components/DbmlGraphElements/RefLink";
+import TableGroup from "@dbml/core/types/model_structure/tableGroup";
+import {TableGroupElement} from "components/DbmlGraphElements/TableGroupElement";
 
 export const itemPosition = (portsArgs: dia.Element.Port[], elBBox: dia.BBox): g.Point[] => {
   return portsArgs.map((_port: dia.Element.Port, index: number, {length}) => {
-    const bottom = elBBox.height - (LIST_ITEM_HEIGHT / 2);
+    const bottom = elBBox.height - (LIST_ITEM_HEIGHT );
     const y = (length - 1 - index) * (LIST_ITEM_HEIGHT);
     return new g.Point(0, bottom - y);
   });
@@ -41,7 +43,7 @@ export class TableElement extends dia.Element {
         },
         headerText: {
           text: 'Label',
-          textVerticalAnchor: 'top'
+          y: (HEADER_HEIGHT/2)
         }
       },
       markup: [
@@ -75,18 +77,16 @@ export class TableElement extends dia.Element {
               fieldBody: {
                 magnet: 'active',
                 width: 'calc(w)',
-                height: 'calc(h)',
-                y: 'calc(-0.5*h)'
+                height: 'calc(h)'
               },
               fieldName: {
                 'class': 'db-field__name',
-                x: PADDING_M,
-                textVerticalAnchor: 'middle'
+                y: 'calc(0.5*h)'
               },
               fieldType: {
                 'class': 'db-field__type',
-                x: `calc(w-${PADDING_M})`,
-                textVerticalAnchor: 'middle'
+                x: `calc(w)`,
+                y: 'calc(0.5*h)'
               },
             },
             size: {
@@ -191,6 +191,18 @@ export const createTableElement = (table: Table) => new TableElement({
     },
     headerText: {
       text: table.name
+    }
+  }
+})
+
+export const createTableGroupElement = (tableGroup: TableGroup) => new TableGroupElement({
+  id: `tablegroup-${tableGroup.id}`,
+  attrs: {
+    root: {
+      tableGroupId: tableGroup.id
+    },
+    headerText: {
+      text: tableGroup.name
     }
   }
 })

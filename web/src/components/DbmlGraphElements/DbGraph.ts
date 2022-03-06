@@ -7,9 +7,11 @@ import Schema from "@dbml/core/types/model_structure/schema";
 import * as dagre from '@dagrejs/dagre'
 import * as graphlib from '@dagrejs/graphlib'
 import {GRID_SIZE} from "components/DbmlGraphElements/constants";
-import {createRefLink, createTableElement, TableElement} from "components/DbmlGraphElements/TableElement";
+import {createRefLink, createTableElement, createTableGroupElement, TableElement} from "components/DbmlGraphElements/TableElement";
 import {RefLink} from "components/DbmlGraphElements/RefLink";
 import * as events from "events";
+import TableGroup from "@dbml/core/types/model_structure/tableGroup";
+import {TableGroupElement} from "components/DbmlGraphElements/TableGroupElement";
 
 const shapeNamespace = {
   ...shapes,
@@ -156,18 +158,15 @@ export class DbGraph extends events.EventEmitter {
     return this._graph;
   }
 
-  public syncSchema(schema: Schema | {tables: Array<any>, refs: Array<any>} | undefined, positions: DbGraphPositions | undefined): void {
+  public syncSchema(schema: Schema | undefined, positions: DbGraphPositions | undefined): void {
     this.paper.freeze()
 
-    if (!schema) {
-      schema = {
-        tables: [],
-        refs: []
-      };
+    if (schema) {
+      this.syncTables(schema.tables)
+      this.syncRefs(schema.refs)
+      this.syncTableGroups(schema.tableGroups)
     }
 
-    this.syncTables(schema.tables)
-    this.syncRefs(schema.refs)
     if (positions) {
       this.syncPositions(positions)
     }
@@ -225,6 +224,11 @@ export class DbGraph extends events.EventEmitter {
       if (!refCell) continue
       refCell.vertices(refVertexes.vertices)
     }
+
+    const allTableGroupCells = this._graph.getCells().filter(c => /^tablegroup-.*/.test(`${c.id}`))
+    for(const tableGroupCell of allTableGroupCells) {
+      (<TableGroupElement>tableGroupCell).resizeToFit();
+    }
   }
 
   public syncTables(tables: Table[]): void {
@@ -240,7 +244,20 @@ export class DbGraph extends events.EventEmitter {
     }
   }
 
-  public syncRefs(refs) {
+  public syncTableGroups(tableGroups: TableGroup[]): void {
+    for (const tableGroup of tableGroups) {
+      this.addOrUpdateTableGroup(tableGroup);
+    }
+
+    const allCells = this._graph.getCells().filter(c => /^tablegroup-.*/.test(`${c.id}`))
+    for (const tableGroup of allCells) {
+      if (!tableGroups.some(t => `tablegroup-${t.id}` === tableGroup.id)) {
+        this._graph.removeCells([tableGroup])
+      }
+    }
+  }
+
+  public syncRefs(refs: Ref[]) {
     for (const ref of refs) {
       this.addOrUpdateRef(ref)
     }
@@ -253,7 +270,7 @@ export class DbGraph extends events.EventEmitter {
     }
   }
 
-  public addOrUpdateTable(table) {
+  public addOrUpdateTable(table: Table) {
     let cell: TableElement = <TableElement>this._graph.getCell(`table-${table.id}`)
     if (!cell) {
       cell = createTableElement(table)
@@ -270,6 +287,34 @@ export class DbGraph extends events.EventEmitter {
         cell.removePort(port)
       }
     }
+
+    return cell
+  }
+
+  public addOrUpdateTableGroup(tableGroup: TableGroup): TableGroupElement {
+    let cell: TableGroupElement = <TableGroupElement>this._graph.getCell(`tablegroup-${tableGroup.id}`)
+    if (!cell) {
+      cell = createTableGroupElement(tableGroup)
+      cell.addTo(this._graph)
+    }
+    cell.updateTableGroup(tableGroup)
+
+    for (const table of tableGroup.tables) {
+      const tableCell = <TableElement>this._graph.getCell(`table-${table.id}`);
+      if(tableCell) {
+        if(!tableCell.isEmbeddedIn(cell)) {
+          cell.embed(tableCell);
+        }
+      }
+    }
+
+    for (const embed of cell.getEmbeddedCells()) {
+      if (!tableGroup.tables.some(t => `table-${t.id}` === embed.id)) {
+        cell.unembed(embed);
+      }
+    }
+
+    cell.resizeToFit();
 
     return cell
   }
@@ -295,6 +340,7 @@ export class DbGraph extends events.EventEmitter {
       id: `table-${targetTable.id}`,
       port: `field-${targetField.id}`
     })
+    link.reparent();
   }
 
   public applyAutoLayout(): void {
@@ -312,6 +358,7 @@ export class DbGraph extends events.EventEmitter {
   get scale(): number {
     return this._paper.scale().sx;
   }
+
   set scale(value: number) {
     this._paper.scale(Math.min(this._zoomMax, Math.max(this._zoomMin, value)));
   }
@@ -372,8 +419,10 @@ export class DbGraph extends events.EventEmitter {
   }
 
   private onElementPointerDown(cellView: dia.ElementView, evt: dia.Event, x: number, y: number): void {
-    this._elementPointerDown = true;
-    this._elementPointerDownPoint = this._paper.clientToLocalPoint({x, y});
+    if (/^(table|ref|field)-.*/.test(<string>cellView.model.id)) {
+      this._elementPointerDown = true;
+      this._elementPointerDownPoint = this._paper.clientToLocalPoint({x, y});
+    }
   }
 
   private onElementPointerUp(cellView: dia.ElementView, evt: dia.Event, x: number, y: number): void {

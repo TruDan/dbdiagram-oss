@@ -1,7 +1,7 @@
 @import "jointjs";
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
 
-$table-font-family: 'Noto Sans Mono', monospace !default;
+$table-font-family: 'Source Sans 3', monospace !default;
 $table-border-width: 2 !default;
 
 $table-header-padding-x: 8px !default;
@@ -79,6 +79,26 @@ $table-field-padding-y: 9px !default;
     }
   }
 
+  .db-tablegroup {
+    pointer-events: none;
+    &__bg {
+      fill: var(--table-group-color);
+      stroke: var(--table-group-stroke-color);
+      stroke-width: 2px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      stroke-opacity: 0.6;
+    }
+
+    &__header {
+      fill: var(--table-group-name-color);
+      transform: translateX(10px) translateY(.35em);
+      font-weight: 700;
+      font-size: 14px;
+      pointer-events: none;
+    }
+  }
+
   .db-table {
     &-header {
       rect {
@@ -147,6 +167,10 @@ $table-field-padding-y: 9px !default;
       transform: translateX(-10px) translateY(.35em);
     }
 
+    &__pk {
+      font-weight: 800;
+    }
+
     &.db-field--highlight, &__highlight {
       rect {
         fill: var(--highlight-field-color);
@@ -154,7 +178,7 @@ $table-field-padding-y: 9px !default;
     }
   }
 
-  .ref {
+  .ref, .db-ref, .db-relation {
     fill: none;
     stroke: var(--ref-color);
     stroke-width: 2;
