@@ -74,6 +74,13 @@
   const watchSchema = watch(() => props.schema, (newValue) => graphRef.value.syncSchema(newValue, props.positions))
   const watchPositions = watch(() => props.positions, (newValue) => graphRef.value.syncPositions(newValue))
 
+  const applyAutoLayout = () => {
+    graphRef.value.applyAutoLayout()
+  }
+
+  const applyScaleToFit = () => {
+    graphRef.value.applyScaleToFit()
+  }
 </script>
 
 <style scoped>
