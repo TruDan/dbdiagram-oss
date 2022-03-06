@@ -1,0 +1,32 @@
+name: Deploy to Github Pages
+on:
+  push:
+    branches:
+      - main
+jobs:
+  gh-pages-deploy:
+    name: Deploying to Github Pages
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+        - uses: actions/setup-node@v2
+          with:
+            node-version: '16'
+
+        - name: Install packages
+          working-directory: web
+          run: yarn install --frozen-lockfile
+
+        - name: Build Vue app
+          working-directory: web
+          run: |
+            yarn build
+            cd dist
+            ln -s index.html 404.html
+            git config --global user.email "${{ secrets.OCTOKIT_EMAIL }}"
+            git config --global user.name "${{ github.repository_owner }}"
+            git init
+            git add -A
+            git commit -m 'Automatic gh-pages update'
+            git push -f https://${{ github.repository_owner }}:${{ github.token }}@github.com/${{github.repository}}.git master:gh-pages
+          shell: bash
