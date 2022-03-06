@@ -1,7 +1,7 @@
 <template>
   <div class="dbml-graph-wrapper">
     <v-db-chart v-if="schema"
-                :tables="tables"
+                v-model:tables="tables"
     >
 
     </v-db-chart>
@@ -49,30 +49,41 @@
     emits: [
       'update:positions',
     ],
-    setup (props) {
+    setup (props, { emit }) {
       const editor = useEditorStore()
 
       const locateTable = (tableId) => {
         const table = editor.findTable(tableId)
         if (table) {
           const token = table.token
-          editor.updateSelectionMarker(token.start, token.end);
+          editor.updateSelectionMarker(token.start, token.end)
         }
       }
       const locateField = (fieldId) => {
         const field = editor.findField(fieldId)
         if (field) {
           const token = field.token
-          editor.updateSelectionMarker(token.start, token.end);
+          editor.updateSelectionMarker(token.start, token.end)
         }
       }
 
-      const tables = computed(() => {
-        if(!props.schema) return [];
-        return props.schema.tables.map(table => ({
-          ...table,
-          position: props.positions && props.positions.tablePositions.find(p => p.id === table.id) || {x: 0, y: 0}
-        }))
+      const tables = computed({
+        get () {
+          if (!props.schema) return []
+          return props.schema.tables.map(table => ({
+            ...table,
+            position: props.positions && props.positions.tablePositions.find(p => p.id === table.id) || {
+              x: 0,
+              y: 0
+            }
+          }))
+        },
+        set (value) {
+          emit('update:positions', {
+            ...props.positions,
+            tablePositions: value.map(table => table.position)
+          })
+        }
       })
 
       return {
@@ -86,7 +97,7 @@
         }
       }
     }
-  }
+    }
 </script>
 
 <style scoped>

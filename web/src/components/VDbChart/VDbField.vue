@@ -3,6 +3,8 @@
     ref="root"
     :class="{
       'db-field':true,
+      'db-field__highlight': highlight,
+      'db-field__dragging': dragging,
       'db-field__pk': pk,
       'db-field__unique': unique,
       'db-field__not_null': not_null,
@@ -13,6 +15,10 @@
     :y="position.y"
     :width="size.width"
     :height="size.height"
+    @mousedown="onMouseDown"
+    @mouseup="onMouseUp"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <rect
       :height="size.height"
@@ -32,7 +38,7 @@
 </template>
 
 <script>
-  import { computed, ref } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
 
   export default {
     name: 'VDbField',
@@ -55,7 +61,7 @@
       _enum: Object
     },
     setup (props) {
-      const root = ref(null)
+      const root = ref(null);
 
       const size = computed(() => ({
         width: props.width,
@@ -67,10 +73,37 @@
         y: 32 + (props.table.fields.findIndex(f => f.id === props.id) * 29)
       }))
 
+
+      const mounted = onMounted(() => {
+        // nothing so far
+      })
+
+      const highlight = ref(false);
+      const dragging = ref(false);
+      const onMouseEnter = (e) => {
+        highlight.value = true;
+      };
+      const onMouseLeave = (e) => {
+        highlight.value = false;
+        dragging.value = false;
+      };
+      const onMouseUp = (e) => {
+        dragging.value = false;
+      };
+      const onMouseDown = (e) => {
+        dragging.value = true;
+      };
+
       return {
         root,
+        highlight,
+        dragging,
         size,
-        position
+        position,
+        onMouseEnter,
+        onMouseLeave,
+        onMouseUp,
+        onMouseDown
       }
     }
   }
