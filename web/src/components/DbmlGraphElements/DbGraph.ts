@@ -309,6 +309,21 @@ export class DbGraph extends events.EventEmitter {
     this._paper.scaleContentToFit({padding: 50})
   }
 
+  get scale(): number {
+    return this._paper.scale().sx;
+  }
+  set scale(value: number) {
+    this._paper.scale(Math.min(this._zoomMax, Math.max(this._zoomMin, value)));
+  }
+
+  get scaleMin(): number {
+    return this._zoomMin;
+  }
+
+  get scaleMax(): number {
+    return this._zoomMax;
+  }
+
   private zoom(x: number, y: number, delta: number): void {
     const s = this._paper.scale();
     // const s = V(this._paper.viewport).scale();

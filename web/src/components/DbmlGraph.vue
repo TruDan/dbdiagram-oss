@@ -4,20 +4,35 @@
 
     </div>
     <div class="dbml-toolbar-wrapper">
-      <q-toolbar class="bg-dark text-white q-btn--rounded">
+      <q-toolbar class="bg-dark text-white rounded-borders shadow-6">
         <q-btn
-          flat
+          class="q-mr-xs q-px-md"
+          color="secondary"
           dense
           @click="applyAutoLayout"
         >
           Auto-Layout
         </q-btn>
         <q-btn
-          flat
+          class="q-mx-xs q-px-md"
+          color="secondary"
           dense
           @click="applyScaleToFit">
           Fit
         </q-btn>
+        <q-space />
+
+        <q-slider
+          class="q-mx-sm"
+          style="width: 25%; min-width: 100px; max-width: 200px;"
+          v-model="scale"
+          :min="minScale"
+          :max="maxScale"
+        />
+          <div
+            class="q-mx-sm non-selectable"
+            style="width: 2.5rem; flex: 0 0 auto;">{{Math.round(scale)}} %</div>
+
       </q-toolbar>
     </div>
   </div>
@@ -26,7 +41,7 @@
 <script setup>
   import { DbGraph } from 'components/DbmlGraphElements/DbGraph'
   import { useEditorStore } from '../store/editor'
-  import { onMounted, ref, watch } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
 
   const props = defineProps({
     schema: {
@@ -70,6 +85,18 @@
       graphRef.value.syncSchema(props.schema, props.positions)
     }
   })
+
+  const scale = computed({
+    get() {
+      return (graphRef.value && graphRef.value.scale || 1) * 100.0;
+    },
+    set(value) {
+      graphRef.value.scale = (value / 100.0)
+    }
+  })
+
+  const minScale = computed(() => (graphRef.value && graphRef.value.scaleMin || 1) * 100.0);
+  const maxScale = computed(() => (graphRef.value && graphRef.value.scaleMax || 1) * 100.0);
 
   const watchSchema = watch(() => props.schema, (newValue) => graphRef.value.syncSchema(newValue, props.positions))
   const watchPositions = watch(() => props.positions, (newValue) => graphRef.value.syncPositions(newValue))
