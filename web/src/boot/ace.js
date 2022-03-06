@@ -83,5 +83,5 @@ export default boot(({ app }) => {
 
   ace.config.setModuleUrl("ace/mode/dbml", workerJsonUrl);
   const themes = ace.require("ace/ext/themelist");
-  console.log(themes, ace);
+  //console.log(themes, ace);
 });

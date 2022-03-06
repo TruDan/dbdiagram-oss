@@ -20,32 +20,22 @@ export default ({ store }) => {
   if (store.$id !== "editor") return;
 
 
+  const throttledDatabaseUpdate = debounce(() => store.updateDatabase(), 250);
   const autoSave = debounce(() => store.saveFile(), 500);
   const handlePreferencesUpdate = (payload) => {
+    if(!payload) {
+      return;
+    }
     if(payload.dark !== undefined) {
       Dark.set(payload.dark);
     }
   }
 
-  (() => {
-    const currentFile = load("currentFile");
-    const preferences = load("preferences");
-
-    store.$patch({
-      currentFile: currentFile,
-      preferences
-    });
-    store.loadFileList();
-    store.loadFile(currentFile);
-    handlePreferencesUpdate(preferences);
-
-  })();
-
-
   store.$subscribe((mutation, state) => {
     if (mutation.storeId === "editor" && mutation.payload) {
-      console.log(mutation.payload);
+      //console.log(mutation.payload);
       if ("positions" in mutation.payload || "source" in mutation.payload) {
+        throttledDatabaseUpdate();
         autoSave();
       }
       if ("currentFile" in mutation.payload) {
@@ -58,4 +48,18 @@ export default ({ store }) => {
     }
   });
 
+
+  (() => {
+    const currentFile = load("currentFile") || 'Untitled';
+    const preferences = load("preferences") || {};
+
+    store.$patch({
+      currentFile: currentFile,
+      preferences: preferences
+    });
+    store.loadFileList();
+    store.loadFile(currentFile);
+    handlePreferencesUpdate(preferences);
+
+  })();
 }

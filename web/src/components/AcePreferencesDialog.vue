@@ -73,7 +73,7 @@
       return {
         setTheme (newTheme) {
           editor.preferences.theme = newTheme.name
-          console.log(themelist, themelist.themesByName[editor.preferences.theme])
+          //console.log(themelist, themelist.themesByName[editor.preferences.theme])
         },
         dialogRef,
         onDialogHide,

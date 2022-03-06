@@ -67,7 +67,7 @@ export const useEditorStore = defineStore("editor", {
       ]
     },
     preferences: {
-      dark: true,
+      dark: false,
       theme: "dracula",
       split: 25.0
     }
@@ -156,7 +156,13 @@ export const useEditorStore = defineStore("editor", {
         fileName = this.currentFile;
       }
       if (!fileName) {
-        fileName = `Untitled (${this.files.length + 1})`;
+        const list = this.files;
+        let i = 1;
+        fileName = `Untitled (${i})`;
+
+        while (list.indexOf(fileName) >= 0) {
+          fileName = `Untitled (${i++})`;
+        }
       }
       console.log("saving file", fileName);
 
