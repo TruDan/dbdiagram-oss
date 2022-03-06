@@ -135,8 +135,11 @@ export class DbGraph extends events.EventEmitter {
       'blank:mousewheel': this.onBlankMouseWheel.bind(this)
     });
 
+    this._paper.$el.on('mouseenter', '.db-table', this.onTableMouseEnter.bind(this))
+    this._paper.$el.on('mouseleave', '.db-table', this.onTableMouseLeave.bind(this))
     this._paper.$el.on('mouseenter', '.db-field', this.onTableFieldMouseEnter.bind(this))
     this._paper.$el.on('mouseleave', '.db-field', this.onTableFieldMouseLeave.bind(this))
+
     this._paper.$el.on('dblclick', '.db-table-header', this.onTableHeaderDoubleClick.bind(this))
     this._paper.$el.on('dblclick', '.db-field', this.onTableFieldDoubleClick.bind(this))
 
@@ -371,18 +374,32 @@ export class DbGraph extends events.EventEmitter {
       this.emit('editor:table:locate', Number(tableId));
   }
 
+  private onTableMouseEnter(evt: JQuery.MouseEnterEvent): void {
+    const el = jQuery(evt.currentTarget);
+    evt.stopPropagation();
+
+    el.toggleClass('db-table__highlight', true);
+  }
+
+  private onTableMouseLeave(evt: JQuery.MouseLeaveEvent): void {
+    const el = jQuery(evt.currentTarget);
+    evt.stopPropagation();
+
+    el.toggleClass('db-table__highlight', false);
+  }
+
   private onTableFieldMouseEnter(evt: JQuery.MouseEnterEvent): void {
     const el = jQuery(evt.currentTarget);
     evt.stopPropagation();
 
-    el.toggleClass('db-field--highlight', true);
+    el.toggleClass('db-field__highlight', true);
   }
 
   private onTableFieldMouseLeave(evt: JQuery.MouseLeaveEvent): void {
     const el = jQuery(evt.currentTarget);
     evt.stopPropagation();
 
-    el.toggleClass('db-field--highlight', false);
+    el.toggleClass('db-field__highlight', false);
   }
 
   private onTableFieldDoubleClick(evt: JQuery.DoubleClickEvent): void {
@@ -395,11 +412,11 @@ export class DbGraph extends events.EventEmitter {
   }
 
   private onCellMouseEnter(cellView: dia.CellView, evt: dia.Event): void {
-    cellView.$el.toggleClass('db-table--highlight', true);
+    cellView.$el.toggleClass('db-table__highlight', true);
   }
 
   private onCellMouseLeave(cellView: dia.CellView, evt: dia.Event): void {
-    cellView.$el.toggleClass('db-table--highlight', false);
+    cellView.$el.toggleClass('db-table__highlight', false);
   }
 
   private onLinkMouseEnter(cellView: dia.LinkView, evt: dia.Event): void {

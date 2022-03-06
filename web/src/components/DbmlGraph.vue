@@ -23,77 +23,57 @@
   </div>
 </template>
 
-<script>
+<script setup>
   import { DbGraph } from 'components/DbmlGraphElements/DbGraph'
   import { useEditorStore } from '../store/editor'
   import { onMounted, ref, watch } from 'vue'
 
-  export default {
-    name: 'DbmlGraph',
-    props: {
-      schema: {
-        type: Object,
-        required: true
-      },
-      positions: {
-        type: Object,
-        required: true
-      }
+  const props = defineProps({
+    schema: {
+      type: Object,
+      required: true
     },
-    emits: [
-      'update:positions',
-    ],
-    setup (props) {
-      const paper = ref(null)
-      const graphRef = ref(null)
-      const editor = useEditorStore()
+    positions: {
+      type: Object,
+      required: true
+    }
+  })
+  const emit = defineEmits([
+    'update:positions',
+  ])
+  const paper = ref(null)
+  const graphRef = ref(null)
+  const editor = useEditorStore()
 
-      const locateTable = (tableId) => {
-        const table = editor.findTable(tableId)
-        if (table) {
-          const token = table.token
-          editor.updateSelectionMarker(token.start, token.end);
-        }
-      }
-      const locateField = (fieldId) => {
-        const field = editor.findField(fieldId)
-        if (field) {
-          const token = field.token
-          editor.updateSelectionMarker(token.start, token.end);
-        }
-      }
-
-      const mounted = onMounted(() => {
-        graphRef.value = new DbGraph(paper.value)
-        graphRef.value.on('update:positions', (newPositions) => emit('update:positions', newPositions))
-        graphRef.value.on('editor:table:locate', (tableId) => locateTable(tableId))
-        graphRef.value.on('editor:field:locate', (fieldId) => locateField(fieldId))
-
-        if (props.schema) {
-          graphRef.value.syncSchema(props.schema, props.positions)
-        }
-      })
-
-      const watchSchema = watch(() => props.schema, (newValue) => graphRef.value.syncSchema(newValue, props.positions))
-      const watchPositions = watch(() => props.positions, (newValue) => graphRef.value.syncPositions(newValue))
-
-      return {
-        paper,
-        graphRef,
-        editor,
-        mounted,
-        applyAutoLayout () {
-          graphRef.value.applyAutoLayout()
-        },
-        applyScaleToFit () {
-          graphRef.value.applyScaleToFit()
-        },
-
-        watchSchema,
-        watchPositions
-      }
+  const locateTable = (tableId) => {
+    const table = editor.findTable(tableId)
+    if (table) {
+      const token = table.token
+      editor.updateSelectionMarker(token.start, token.end)
     }
   }
+  const locateField = (fieldId) => {
+    const field = editor.findField(fieldId)
+    if (field) {
+      const token = field.token
+      editor.updateSelectionMarker(token.start, token.end)
+    }
+  }
+
+  const mounted = onMounted(() => {
+    graphRef.value = new DbGraph(paper.value)
+    graphRef.value.on('update:positions', (newPositions) => emit('update:positions', newPositions))
+    graphRef.value.on('editor:table:locate', (tableId) => locateTable(tableId))
+    graphRef.value.on('editor:field:locate', (fieldId) => locateField(fieldId))
+
+    if (props.schema) {
+      graphRef.value.syncSchema(props.schema, props.positions)
+    }
+  })
+
+  const watchSchema = watch(() => props.schema, (newValue) => graphRef.value.syncSchema(newValue, props.positions))
+  const watchPositions = watch(() => props.positions, (newValue) => graphRef.value.syncPositions(newValue))
+
 </script>
 
 <style scoped>

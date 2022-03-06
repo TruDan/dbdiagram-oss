@@ -1,4 +1,7 @@
 @import "jointjs";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@200..800&display=swap');
+
+$table-font-family: 'Noto Sans Mono', monospace !default;
 $table-border-width: 2 !default;
 
 $table-header-padding-x: 8px !default;
@@ -28,6 +31,7 @@ $table-field-padding-y: 9px !default;
     --table-group-color: #56565e;
     --table-group-stroke-color: #696969;
     --table-group-name-color: #fbfbfb;
+    --table-highlight-stroke-color: #3ea8de;
   }
 
   &--light {
@@ -56,11 +60,12 @@ $table-field-padding-y: 9px !default;
     --table-group-color: #ebebeb;
     --table-group-stroke-color: #dfdfdf;
     --table-group-name-color: #555;
+    --table-highlight-stroke-color: #3ea8de;
   }
 }
 
-.dbml-graph {
-  font-family: sans-serif;
+.dbml-graph, .db-chart {
+  font-family: $table-font-family;
   font-weight: 400;
   font-size: 13px;
 
@@ -89,11 +94,30 @@ $table-field-padding-y: 9px !default;
       }
 
 
-      text {
-        transform: translate($table-header-padding-x, $table-header-padding-y);
+      text, &__name {
+        transform: translateX(10px) translateY(.35em);
         font-weight: 700;
         font-size: 16px;
         fill: var(--table-header-fg-color);
+        pointer-events: none;
+      }
+    }
+
+    &__highlight {
+
+      overflow:visible;
+      .db-table__background {
+        stroke: var(--table-highlight-stroke-color);
+        stroke-width: 2px;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        stroke-opacity: 0.6;
+      }
+
+      .db-field__ref {
+        rect {
+          fill: var(--highlight-field-color);
+        }
       }
     }
   }
@@ -113,15 +137,17 @@ $table-field-padding-y: 9px !default;
     &__name {
       fill: var(--field-name-color);
       font-size: 12px;
+      transform: translateX(10px) translateY(.35em);
     }
 
     &__type {
       font-size: 12px;
       fill: var(--field-type-color);
       text-anchor: end;
+      transform: translateX(-10px) translateY(.35em);
     }
 
-    &.db-field--highlight {
+    &.db-field--highlight, &__highlight {
       rect {
         fill: var(--highlight-field-color);
       }

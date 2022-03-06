@@ -126,6 +126,7 @@ export class TableElement extends dia.Element {
   }
 
   addOrUpdateField(field: Field) {
+    const portId = `field-${field.id}`;
     let port = this.getPort(`field-${field.id}`);
     if (!port) {
       port = createFieldPort(field);
@@ -133,8 +134,18 @@ export class TableElement extends dia.Element {
     }
 
     if (port.attrs && port.attrs.fieldName && port.attrs.fieldType) {
-      port.attrs.fieldName.text = field.name;
-      port.attrs.fieldType.text = field.type.type_name;
+      this.portProp(portId, 'attrs.fieldName.text'.split('.'), field.name);
+      this.portProp(portId, 'attrs.fieldType.text'.split('.'), field.type.type_name);
+      if (port.attrs.root) {
+        const classes: Array<string> = ['db-field'];
+        if(field.pk) classes.push('db-field__pk');
+        if(field.endpoints.length > 0) classes.push('db-field__ref');
+        if(field.unique) classes.push('db-field__unique');
+        if(field.not_null) classes.push('db-field__not_null');
+        if(field.increment) classes.push('db-field__increment');
+
+        this.portProp(portId, 'attrs.root.class'.split('.'), classes.join(' '));
+      }
     }
   }
 
