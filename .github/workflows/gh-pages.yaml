@@ -21,7 +21,7 @@ jobs:
           working-directory: web
           run: |
             yarn build
-            cd dist
+            cd dist/spa
             ln -s index.html 404.html
             git config --global user.email "${{ secrets.OCTOKIT_EMAIL }}"
             git config --global user.name "${{ github.repository_owner }}"
