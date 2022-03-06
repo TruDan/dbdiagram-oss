@@ -1,4 +1,4 @@
-import { debounce, throttle, useQuasar } from "quasar";
+import { debounce, Dark } from "quasar";
 
 const encode = (value) => btoa(JSON.stringify(value));
 const decode = (encoded) => JSON.parse(atob(encoded));
@@ -19,12 +19,11 @@ const throttledSave = debounce(save, 250);
 export default ({ store }) => {
   if (store.$id !== "editor") return;
 
-  const q = useQuasar();
 
   const autoSave = debounce(() => store.saveFile(), 500);
   const handlePreferencesUpdate = (payload) => {
     if(payload.dark !== undefined) {
-      q.dark.set(payload.dark);
+      Dark.set(payload.dark);
     }
   }
 
