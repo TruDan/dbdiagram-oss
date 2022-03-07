@@ -21,7 +21,10 @@ export default ({ store }) => {
 
 
   const throttledDatabaseUpdate = debounce(() => store.updateDatabase(), 250);
-  const autoSave = debounce(() => store.saveFile(), 500);
+  const autoSave = debounce(() => {
+    console.log("autosave");
+    store.saveFile()
+  }, 500);
   const handlePreferencesUpdate = (payload) => {
     if(!payload) {
       return;

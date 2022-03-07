@@ -206,7 +206,3 @@ export const createTableGroupElement = (tableGroup: TableGroup) => new TableGrou
     }
   }
 })
-
-export const createRefLink = (ref: Ref) => new RefLink({
-  id: `ref-${ref.id}`
-})

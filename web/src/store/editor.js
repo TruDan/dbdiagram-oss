@@ -70,6 +70,14 @@ export const useEditorStore = defineStore("editor", {
       dark: false,
       theme: "dracula",
       split: 25.0
+    },
+    parserError: {
+      location: {
+        start: { row: undefined, col: undefined },
+        end: { row: undefined, col: undefined }
+      },
+      type: undefined,
+      message: undefined
     }
   }),
   getters: {
@@ -142,11 +150,13 @@ export const useEditorStore = defineStore("editor", {
       if (file && file.source && file.positions) {
         const source = file.source;
         const positions = file.positions;
+        this.clearDatabase();
         this.$patch({
           currentFile: fileName,
           source: source,
           positions: positions
         });
+        this.clearParserError();
         this.updateDatabase();
       }
     },
@@ -233,12 +243,30 @@ export const useEditorStore = defineStore("editor", {
         positions: positions
       });
     },
+    clearDatabase() {
+      this.database = {
+        schemas: [
+          {
+            tableGroups: [],
+            tables: [],
+            refs: []
+          }
+        ]
+      };
+      this.clearParserError();
+    },
     updateDatabase() {
+      console.log("updating database...");
       try {
         const database = Parser.parse(this.source.text, this.source.format);
+        database.normalize();
         this.database = database;
+        this.clearParserError();
+        console.log("updated database");
       } catch (e) {
         // do nothing
+        console.error(e);
+        this.updateParserError(e);
       }
     },
     updatePreferences(preferences) {
@@ -278,6 +306,27 @@ export const useEditorStore = defineStore("editor", {
           }
         }
       });
+    },
+    clearParserError() {
+      this.updateParserError(undefined);
+    },
+    updateParserError(err) {
+      if (err) {
+        this.$patch({
+          parserError: {
+            location: {
+              start: { row: err.location.start.line - 1, col: err.location.start.column - 1 },
+              end: { row: err.location.end.line - 1, col: err.location.end.column - 1 }
+            },
+            type: 'error',
+            message: err.message
+          }
+        });
+      } else {
+        this.$patch({
+          parserError: undefined
+        });
+      }
     }
   }
 });

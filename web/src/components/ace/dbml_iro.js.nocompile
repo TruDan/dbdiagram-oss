@@ -1,0 +1,238 @@
+/*
+* To try in Ace editor, copy and paste into the mode creator
+* here : http://ace.c9.io/tool/mode_creator.html
+*/
+
+define(function(require, exports, module) {
+  "use strict";
+  var oop = require("../lib/oop");
+  var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+  /* --------------------- START ----------------------------- */
+  var MysampleHighlightRules = function() {
+    this.$rules = {
+      "start" : [
+        {
+          "token" : "entity.name.type.dbml",
+          "regex" : "\\b([pP]roject|[tT]able|[tT]able[Gg]roup|[rR]ef|[eE]num|[iI]ndexes|[nN]ote|[Pp]k|[Nn]ot [Nn]ull|[Nn]ull|[Ii]ncrement|[Dd]efault)\\b"
+        },
+        {
+          "token" : "comment",
+          "regex" : "(//.*$)"
+        },
+        {
+          "token" : "text",
+          "regex" : "(['])",
+          "push" : "str_singleline_singlequote__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([\"])",
+          "push" : "str_singleline_doublequote__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([`])",
+          "push" : "str_singleline_backtick__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([']{3})",
+          "push" : "str_multiline_singlequote__1"
+        },
+        {
+          "token" : "keyword",
+          "regex" : "\\b(as|by|bool|boolean|bit|blob|decimal|double|enum|float|long|longblob|longtext|medium|mediumblob|mediumint|mediumtext|time|timestamp|timestamptz|tinyblob|tinyint|tinytext|text|bigint|int|int1|int2|int3|int4|int8|integer|float|float4|float8|double|char|varbinary|varchar|varcharacter|precision|date|datetime|year|unsigned|signed|numeric|ucase|lcase|mid|len|round|rank|now|format|coalesce|ifnull|isnull|nvl|true|false)\\b"
+        },
+        {
+          "token" : "keyword.operator",
+          "regex" : "([<>\\\\-])"
+        },
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\{)",
+          "push" : "main__1"
+        },
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\[)",
+          "push" : "main__2"
+        },
+        {
+          defaultToken : "text",
+        }
+      ],
+      "main__1" : [
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\})",
+          "next" : "pop"
+        },
+        {
+          "token" : "entity.name.type.dbml",
+          "regex" : "\\b([pP]roject|[tT]able|[tT]able[Gg]roup|[rR]ef|[eE]num|[iI]ndexes|[nN]ote|[Pp]k|[Nn]ot [Nn]ull|[Nn]ull|[Ii]ncrement|[Dd]efault)\\b"
+        },
+        {
+          "token" : "comment",
+          "regex" : "(//.*$)"
+        },
+        {
+          "token" : "text",
+          "regex" : "(['])",
+          "push" : "str_singleline_singlequote__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([\"])",
+          "push" : "str_singleline_doublequote__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([`])",
+          "push" : "str_singleline_backtick__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([']{3})",
+          "push" : "str_multiline_singlequote__1"
+        },
+        {
+          "token" : "keyword",
+          "regex" : "\\b(as|by|bool|boolean|bit|blob|decimal|double|enum|float|long|longblob|longtext|medium|mediumblob|mediumint|mediumtext|time|timestamp|timestamptz|tinyblob|tinyint|tinytext|text|bigint|int|int1|int2|int3|int4|int8|integer|float|float4|float8|double|char|varbinary|varchar|varcharacter|precision|date|datetime|year|unsigned|signed|numeric|ucase|lcase|mid|len|round|rank|now|format|coalesce|ifnull|isnull|nvl|true|false)\\b"
+        },
+        {
+          "token" : "keyword.operator",
+          "regex" : "([<>\\\\-])"
+        },
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\{)",
+          "push" : "main__1"
+        },
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\[)",
+          "push" : "main__2"
+        },
+        {
+          defaultToken : "text",
+        }
+      ],
+      "main__2" : [
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\])",
+          "next" : "pop"
+        },
+        {
+          "token" : "entity.name.type.dbml",
+          "regex" : "\\b([pP]roject|[tT]able|[tT]able[Gg]roup|[rR]ef|[eE]num|[iI]ndexes|[nN]ote|[Pp]k|[Nn]ot [Nn]ull|[Nn]ull|[Ii]ncrement|[Dd]efault)\\b"
+        },
+        {
+          "token" : "comment",
+          "regex" : "(//.*$)"
+        },
+        {
+          "token" : "text",
+          "regex" : "(['])",
+          "push" : "str_singleline_singlequote__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([\"])",
+          "push" : "str_singleline_doublequote__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([`])",
+          "push" : "str_singleline_backtick__1"
+        },
+        {
+          "token" : "text",
+          "regex" : "([']{3})",
+          "push" : "str_multiline_singlequote__1"
+        },
+        {
+          "token" : "keyword",
+          "regex" : "\\b(as|by|bool|boolean|bit|blob|decimal|double|enum|float|long|longblob|longtext|medium|mediumblob|mediumint|mediumtext|time|timestamp|timestamptz|tinyblob|tinyint|tinytext|text|bigint|int|int1|int2|int3|int4|int8|integer|float|float4|float8|double|char|varbinary|varchar|varcharacter|precision|date|datetime|year|unsigned|signed|numeric|ucase|lcase|mid|len|round|rank|now|format|coalesce|ifnull|isnull|nvl|true|false)\\b"
+        },
+        {
+          "token" : "keyword.operator",
+          "regex" : "([<>\\\\-])"
+        },
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\{)",
+          "push" : "main__1"
+        },
+        {
+          "token" : "paren.lparen",
+          "regex" : "(\\[)",
+          "push" : "main__2"
+        },
+        {
+          defaultToken : "text",
+        }
+      ],
+      "str_multiline_singlequote__1" : [
+        {
+          "token" : "text",
+          "regex" : "([']{3})",
+          "next" : "pop"
+        },
+        {
+          "token" : "constant.character.escape.dbml",
+          "regex" : "(\\\\.)"
+        },
+        {
+          defaultToken : "text",
+        }
+      ],
+      "str_singleline_backtick__1" : [
+        {
+          "token" : "text",
+          "regex" : "([`])",
+          "next" : "pop"
+        },
+        {
+          "token" : "constant.character.escape.dbml",
+          "regex" : "(\\\\.)"
+        },
+        {
+          defaultToken : "text",
+        }
+      ],
+      "str_singleline_doublequote__1" : [
+        {
+          "token" : "text",
+          "regex" : "([\"])",
+          "next" : "pop"
+        },
+        {
+          "token" : "constant.character.escape.dbml",
+          "regex" : "(\\\\.)"
+        },
+        {
+          defaultToken : "text",
+        }
+      ],
+      "str_singleline_singlequote__1" : [
+        {
+          "token" : "text",
+          "regex" : "(['])",
+          "next" : "pop"
+        },
+        {
+          "token" : "constant.character.escape.dbml",
+          "regex" : "(\\\\.)"
+        },
+        {
+          defaultToken : "text",
+        }
+      ]
+    };
+    this.normalizeRules();
+  };
+  /* ------------------------ END ------------------------------ */
+  oop.inherits(MysampleHighlightRules, TextHighlightRules);
+  exports.MysampleHighlightRules = MysampleHighlightRules;
+});

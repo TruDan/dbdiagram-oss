@@ -1,0 +1,242 @@
+#################################################################
+## Iro
+################################################################
+##
+## * Press Ctrl + '+'/'-' To Zoom in
+## * Press Ctrl + S to save and recalculate...
+## * Documents are saved to web storage.
+## * Only one save slot supported.
+## * Matches cannot span lines.
+## * Unicode chars must be defined in \u0000 to \uffff format.
+## * All matches must be contained by a single group ( ... )
+## * Look behinds not permitted, (?<= or (?<!
+## * Look forwards are permitted (?= or (?!
+## * Constants are defined as __my_const = (......)
+## * The \= format allows unescaped regular expressions
+## * Constants referenced by match \= $${__my_const}
+## * Constants can reference other constants
+## * You are free to delete all the default scopes.
+## * Twitter : ainslec , Web: http://eeyo.io/iro
+##
+################################################################
+
+name                   = mysample
+file_extensions []     = mysample;
+textmate_compatible    = true
+
+################################################################
+## Constants
+################################################################
+
+__MY_CONSTANT \= (\b[a-z][a-z0-9]*)
+
+################################################################
+## Styles
+################################################################
+
+styles [] {
+
+.structure : style {
+   color                 = blue
+   ace_scope             = entity.name.type.dbml
+   textmate_scope        = entity.name.type.dbml
+}
+
+.keyword : style {
+   color                 = cyan
+   ace_scope             = keyword
+   textmate_scope        = keyword
+}
+
+.comment : style {
+   color                 = grey
+   italic                = true
+   ace_scope             = comment
+   textmate_scope        = comment
+}
+
+.operator : style {
+   color                 = green
+   bold                  = true
+   italic                = true
+   textmate_scope        = keyword.operator
+   ace_scope             = keyword.operator
+}
+
+.escape : style {
+   ace_scope             = constant.character.escape.dbml
+   textmate_scope        = constant.character.escape.dbml
+}
+
+.string : style {
+   color                 = brown
+   ace_scope             = text
+   textmate_scope        = text
+}
+
+.lbrace : style {
+   color                 = yellow
+   ace_scope             = paren.lparen
+   textmate_scope        = paren.lparen
+}
+.rbrace : style {
+   color                 = yellow
+   ace_scope             = paren.lparen
+   textmate_scope        = paren.lparen
+}
+
+.illegal : style {
+   color                 = white
+   background_color      = red
+   ace_scope             = invalid
+   textmate_scope        = invalid
+}
+
+}
+
+#################################################
+## Parse contexts
+#################################################
+
+contexts [] {
+
+##############################################
+## Main Context - Entry point context
+##############################################
+
+main : context {
+
+   : include "structures";
+   : include "comments";
+   : include "strings";
+   : include "keywords";
+   : include "relationships";
+
+   : inline_push {
+      regex \= (\{)
+      styles[] = .lbrace;
+      : pop {
+         regex \= (\})
+         styles[] = .rbrace;
+      }
+
+      : include "main";
+   }
+
+   : inline_push {
+      regex \= (\[)
+      styles[] = .lbrace;
+      : pop {
+         regex \= (\])
+         styles[] = .rbrace;
+      }
+
+      : include "main";
+   }
+}
+
+#################################################
+## End of Contexts
+#################################################
+
+structures : context {
+   : pattern {
+      regex \= \b([pP]roject|[tT]able|[tT]able[Gg]roup|[rR]ef|[eE]num|[iI]ndexes|[nN]ote|[Pp]k|[Nn]ot [Nn]ull|[Nn]ull|[Ii]ncrement|[Dd]efault)\b
+      styles[] = .structure;
+   }
+}
+
+relationships : context {
+   : pattern {
+      regex \= ([<>\\-])
+      styles[] = .operator;
+   }
+}
+
+keywords : context {
+   : pattern {
+      regex \= \b(as|by|bool|boolean|bit|blob|decimal|double|enum|float|long|longblob|longtext|medium|mediumblob|mediumint|mediumtext|time|timestamp|timestamptz|tinyblob|tinyint|tinytext|text|bigint|int|int1|int2|int3|int4|int8|integer|float|float4|float8|double|char|varbinary|varchar|varcharacter|precision|date|datetime|year|unsigned|signed|numeric|ucase|lcase|mid|len|round|rank|now|format|coalesce|ifnull|isnull|nvl|true|false)\b
+      styles[] = .keyword;
+   }
+}
+
+comments : context {
+   : pattern {
+      regex \= (//.*$)
+      styles[] = .comment;
+   }
+}
+
+strings : context {
+
+   : include "str_singleline_singlequote" ;
+   : include "str_singleline_doublequote" ;
+   : include "str_singleline_backtick" ;
+   : include "str_multiline_singlequote" ;
+
+}
+
+escapes : context {
+   : pattern {
+      regex \= (\\.)
+      styles[] = .escape;
+   }
+}
+
+str_multiline_singlequote : context {
+
+   : inline_push {
+      regex \= ([']{3})
+      styles[] = .string;
+      : pop {
+         regex \= ([']{3})
+         styles[] = .string;
+      }
+
+      : include "escapes" ;
+   }
+}
+
+str_singleline_backtick : context {
+
+   : inline_push {
+      regex \= ([`])
+      styles[] = .string;
+      : pop {
+         regex \= ([`])
+         styles[] = .string;
+      }
+
+      : include "escapes" ;
+   }
+}
+
+str_singleline_singlequote : context {
+
+   : inline_push {
+      regex \= (['])
+      styles[] = .string;
+      : pop {
+         regex \= (['])
+         styles[] = .string;
+      }
+
+      : include "escapes" ;
+   }
+}
+
+str_singleline_doublequote : context {
+
+   : inline_push {
+      regex \= (["])
+      styles[] = .string;
+      : pop {
+         regex \= (["])
+         styles[] = .string;
+      }
+
+      : include "escapes" ;
+   }
+}
+
+}

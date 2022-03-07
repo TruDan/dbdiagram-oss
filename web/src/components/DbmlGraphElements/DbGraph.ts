@@ -1,13 +1,12 @@
 import jQuery from "jquery";
-import {dia, layout, linkTools, shapes, V, Vectorizer} from "jointjs";
-import Backbone from "backbone";
+import {anchors, connectionStrategies, dia, g, layout, linkTools, shapes, V, Vectorizer} from "jointjs";
 import Table from "@dbml/core/types/model_structure/table";
 import Ref from "@dbml/core/types/model_structure/ref";
 import Schema from "@dbml/core/types/model_structure/schema";
 import * as dagre from '@dagrejs/dagre'
 import * as graphlib from '@dagrejs/graphlib'
 import {GRID_SIZE} from "components/DbmlGraphElements/constants";
-import {createRefLink, createTableElement, createTableGroupElement, TableElement} from "components/DbmlGraphElements/TableElement";
+import {createTableElement, createTableGroupElement, TableElement} from "components/DbmlGraphElements/TableElement";
 import {RefLink} from "components/DbmlGraphElements/RefLink";
 import * as events from "events";
 import TableGroup from "@dbml/core/types/model_structure/tableGroup";
@@ -42,6 +41,29 @@ interface DbGraphEvents {
   'editor:reference:locate': (referenceId: number) => void,
 }
 
+// @ts-ignore
+function _leftRightAnchor(view: dia.ElementView, magnet: SVGElement, {x, y}: g.Point | SVGElement, opt: any) {
+
+  const angle = view.model.angle();
+  const bbox = view.getNodeBBox(magnet);
+  const anchor = bbox.center();
+  const topLeft = bbox.origin();
+  const bottomRight = bbox.corner();
+
+  let padding: number = opt.padding;
+  if (!isFinite(padding)) padding = 0;
+
+
+  if ((topLeft.x + padding) <= x && x <= (bottomRight.x - padding)) {
+    const dx = (x - anchor.x);
+    anchor.y += (angle === 90 || angle === 270) ? 0 : dx * Math.tan(g.toRad(angle));
+    anchor.x += dx;
+  }
+
+  console.log(anchor, angle, bbox, anchor, topLeft, bottomRight);
+  return anchor;
+}
+
 export interface DbGraph {
   on<U extends keyof DbGraphEvents>(event: U, listener: DbGraphEvents[U]): this;
 
@@ -69,6 +91,13 @@ export class DbGraph extends events.EventEmitter {
     super();
 
     this._graph = new dia.Graph({}, {cellNamespace: shapeNamespace});
+    this._linkTools = new dia.ToolsView({
+      tools: [
+        new linkTools.Vertices({stopPropagation: false}),
+        new linkTools.Segments({stopPropagation: false}),
+      ]
+    });
+
     // @ts-ignore
     this._paper = new dia.Paper({
       el: element,
@@ -86,20 +115,24 @@ export class DbGraph extends events.EventEmitter {
       defaultRouter: {
         name: 'manhattan',
         args: {
-          step: GRID_SIZE,
+          step: GRID_SIZE / 4.0,
+          excludeTypes: ['db.TableGroupElement', 'db.RefLink'],
           startDirections: ['left', 'right'],
-          endDirections: ['left', 'right']
+          endDirections: ['left', 'right'],
         }
       },
       defaultConnectionPoint: {
         name: 'boundary',
-        args: {
-          extrapolate: true,
-          sticky: true
-        }
+        // args: {
+        //   extrapolate: true,
+        //   sticky: true
+        // }
       },
+      connectionStrategy: connectionStrategies.pinAbsolute,
+      defaultAnchor: _leftRightAnchor,
       defaultConnector: {
-        name: 'rounded'
+        name: 'normal',
+        args: {}
       },
       perpendicularLinks: true,
       drawGrid: {
@@ -114,12 +147,6 @@ export class DbGraph extends events.EventEmitter {
       }
     });
 
-    this._linkTools = new dia.ToolsView({
-      tools: [
-        new linkTools.Vertices({stopPropagation: false}),
-        new linkTools.Segments({stopPropagation: false}),
-      ]
-    });
 
     this._paper.on({
       'blank:pointerdown': this.onBlankPointerDown.bind(this),
@@ -146,7 +173,8 @@ export class DbGraph extends events.EventEmitter {
     this._paper.$el.on('dblclick', '.db-field', this.onTableFieldDoubleClick.bind(this))
 
     this._graph.on({
-      'change': this.onGraphChange.bind(this)
+      'change': this.onGraphChange.bind(this),
+      // 'add': this.onGraphAdd.bind(this)
     })
   }
 
@@ -157,6 +185,7 @@ export class DbGraph extends events.EventEmitter {
   get graph(): dia.Graph {
     return this._graph;
   }
+
 
   public syncSchema(schema: Schema | undefined, positions: DbGraphPositions | undefined): void {
     this.paper.freeze()
@@ -226,7 +255,7 @@ export class DbGraph extends events.EventEmitter {
     }
 
     const allTableGroupCells = this._graph.getCells().filter(c => /^tablegroup-.*/.test(`${c.id}`))
-    for(const tableGroupCell of allTableGroupCells) {
+    for (const tableGroupCell of allTableGroupCells) {
       (<TableGroupElement>tableGroupCell).resizeToFit();
     }
   }
@@ -301,8 +330,8 @@ export class DbGraph extends events.EventEmitter {
 
     for (const table of tableGroup.tables) {
       const tableCell = <TableElement>this._graph.getCell(`table-${table.id}`);
-      if(tableCell) {
-        if(!tableCell.isEmbeddedIn(cell)) {
+      if (tableCell) {
+        if (!tableCell.isEmbeddedIn(cell)) {
           cell.embed(tableCell);
         }
       }
@@ -322,14 +351,16 @@ export class DbGraph extends events.EventEmitter {
   public addOrUpdateRef(ref: Ref): void {
     let link: RefLink = <RefLink>this._graph.getCell(`ref-${ref.id}`)
     if (!link) {
-      link = createRefLink(ref)
+      link = this.createRefLink(ref)
       link.addTo(this._graph)
     }
 
-    const sourceField = ref.endpoints[0].fields[0]
+    const sourceEndpoint = ref.endpoints[0]
+    const sourceField = sourceEndpoint.fields[0]
     const sourceTable = sourceField.table
 
-    const targetField = ref.endpoints[1].fields[0]
+    const targetEndpoint = ref.endpoints[1]
+    const targetField = targetEndpoint.fields[0]
     const targetTable = targetField.table
 
     link.source({
@@ -340,6 +371,25 @@ export class DbGraph extends events.EventEmitter {
       id: `table-${targetTable.id}`,
       port: `field-${targetField.id}`
     })
+    link.labels([
+      {
+        position: -25,
+        attrs: {
+          label: {
+            text: sourceEndpoint.relation
+          }
+        }
+      },
+      {
+        position: 25,
+        attrs: {
+          label: {
+            text: targetEndpoint.relation
+          }
+        }
+      }
+    ]);
+    link.router("manhattan")
     link.reparent();
   }
 
@@ -393,6 +443,14 @@ export class DbGraph extends events.EventEmitter {
       this._didChange = true;
       const positions = this.exportPositions();
       this.emit('update:positions', positions);
+    }
+  }
+
+  private onGraphAdd(cell: dia.Cell): void {
+    if (cell.isLink()) {
+      const linkView = cell.findView(this._paper);
+      linkView.addTools(this._linkTools);
+      linkView.hideTools();
     }
   }
 
@@ -483,14 +541,14 @@ export class DbGraph extends events.EventEmitter {
     cellView.$el.toggleClass('db-table__highlight', false);
   }
 
-  private onLinkMouseEnter(cellView: dia.LinkView, evt: dia.Event): void {
-    cellView.$el.toggleClass('db-relation--highlight', true);
-    cellView.addTools(this._linkTools);
+  private onLinkMouseEnter(linkView: dia.LinkView, evt: dia.Event): void {
+    linkView.$el.toggleClass('db-relation--highlight', true);
+    linkView.addTools(this._linkTools);
   }
 
-  private onLinkMouseLeave(cellView: dia.LinkView, evt: dia.Event): void {
-    cellView.$el.toggleClass('db-relation--highlight', false);
-    cellView.removeTools();
+  private onLinkMouseLeave(linkView: dia.LinkView, evt: dia.Event): void {
+    linkView.$el.toggleClass('db-relation--highlight', false);
+    linkView.removeTools();
   }
 
   private onElementMouseWheel(cellView: dia.ElementView, evt: dia.Event, x: number, y: number, delta: number): void {
@@ -499,6 +557,13 @@ export class DbGraph extends events.EventEmitter {
 
   private onBlankMouseWheel(evt: dia.Event, x: number, y: number, delta: number): void {
     this.zoom(x, y, delta);
+  }
+
+
+  private createRefLink(ref: Ref | undefined = undefined) {
+    return ref ? new RefLink({
+      id: `ref-${ref.id}`
+    }) : new RefLink();
   }
 
 }

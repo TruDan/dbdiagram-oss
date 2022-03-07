@@ -22,12 +22,30 @@ export class TableGroupElement extends dia.Element {
         body: {
           'class': 'db-tablegroup__bg',
           width: 'calc(w)',
-          height: 'calc(h)'
+          height: 'calc(h)',
+          rx: 2,
+          ry: 2
+        },
+        header: {
+          'class': 'db-tablegroup-header',
+          x:0,
+          y:0,
+          width: 'calc(w)',
+          height: HEADER_HEIGHT,
+          rx: 2,
+          ry: 2
         },
         headerText: {
-          'class': 'db-tablegroup__header',
+          'class': 'db-tablegroup-header__text',
           text: 'Label',
           y: (HEADER_HEIGHT/2)
+        },
+        headerSeparator: {
+          'class': 'db-tablegroup-header__separator',
+          x1: 0,
+          y1: HEADER_HEIGHT,
+          x2: 'calc(w)',
+          y2: HEADER_HEIGHT
         }
       },
       markup: [
@@ -36,8 +54,16 @@ export class TableGroupElement extends dia.Element {
           selector: 'body'
         },
         {
+          tagName: 'rect',
+          selector: 'header'
+        },
+        {
           tagName: 'text',
           selector: 'headerText'
+        },
+        {
+          tagName: 'line',
+          selector: 'headerSeparator'
         }
       ]
     };
