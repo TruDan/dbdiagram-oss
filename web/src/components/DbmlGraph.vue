@@ -92,6 +92,7 @@
     },
     set(value) {
       graphRef.value.scale = (value / 100.0)
+      editor.updateScale(graphRef.value.scale);
     }
   })
 

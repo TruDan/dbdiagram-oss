@@ -56,7 +56,12 @@ export const useEditorStore = defineStore("editor", {
     lastSave: 0,
     positions: {
       tablePositions: [],
-      refVertices: []
+      refVertices: [],
+      scale: 1.0,
+      translation: {
+        x: 0,
+        y: 0
+      }
     },
     database: {
       schemas: [
@@ -211,7 +216,12 @@ export const useEditorStore = defineStore("editor", {
         },
         positions: {
           tablePositions: [],
-          refVertices: []
+          refVertices: [],
+          scale: 1.0,
+          translation: {
+            x: 0,
+            y: 0
+          }
         }
       });
       this.saveFile();
@@ -304,6 +314,20 @@ export const useEditorStore = defineStore("editor", {
               end: end
             }
           }
+        }
+      });
+    },
+    updateScale(scale) {
+      this.$patch({
+        positions: {
+          scale: scale
+        }
+      });
+    },
+    updateTranslation(translation) {
+      this.$patch({
+        positions: {
+          translation: translation
         }
       });
     },

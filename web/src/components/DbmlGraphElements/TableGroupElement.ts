@@ -81,7 +81,7 @@ export class TableGroupElement extends dia.Element {
     const maxX: number = max(embeds.map(e => e.x + e.width));
     const maxY: number = max(embeds.map(e => e.y + e.height));
 
-    const padding = 10;
+    const padding = 25;
     const headerHeight = 32;
 
     const bbox = new g.Rect(minX - padding,

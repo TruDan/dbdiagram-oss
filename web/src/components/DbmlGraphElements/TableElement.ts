@@ -44,6 +44,16 @@ export class TableElement extends dia.Element {
         headerText: {
           text: 'Label',
           y: (HEADER_HEIGHT/2)
+        },
+        tooltip: {
+          'class': 'db-table-tooltip',
+          display: 'none',
+        },
+        tooltipBody: {
+          'class': 'db-table-tooltip__bg'
+        },
+        tooltipText: {
+          'class': 'db-table-tooltip__text'
         }
       },
       markup: [
@@ -62,6 +72,20 @@ export class TableElement extends dia.Element {
             {
               tagName: 'text',
               selector: 'headerText',
+            }
+          ]
+        },
+        {
+          tagName: 'g',
+          selector: 'tooltip',
+          children: [
+            {
+              tagName: 'rect',
+              selector: 'tooltipBody'
+            },
+            {
+              tagName: 'text',
+              selector: 'tooltipText'
             }
           ]
         }

@@ -58,13 +58,14 @@
 
       const editorInit = (editor) => {
         ace = editor
-        ace.on('changeAnnotation', e => {
-          console.log(this, ace, ace.session.getAnnotations(), e)
-        })
       }
 
       const options = ref({
         useWorker: false,
+        tabSize: 2,
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        showPrintMargin: false
       })
 
       const subscription = editor.$subscribe((mutation, state) => {
@@ -96,17 +97,6 @@
 
             if (mutation.payload.parserError) {
               const e = state.parserError
-              // ace.session.setAnnotations([
-              //   {
-              //     range: e.location,
-              //     text: e.message,
-              //     type: e.type,
-              //     row: e.location.start.row,
-              //     column: e.location.start.col
-              //   }
-              // ])
-              // const range = new Range(e.location.start.row, e.location.start.col, e.location.end.row, e.location.end.col)
-              // currentMarkerRef.value.errorMarkerId = ace.session.addMarker(range, 'error', 'text', true)
               ace.session.setAnnotations([
                 new InlineAnnotation(ace.session, {
                   text: e.message,

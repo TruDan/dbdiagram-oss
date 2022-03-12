@@ -20,7 +20,9 @@ const shapeNamespace = {
 
 export interface DbGraphPositions {
   tablePositions: TablePosition[],
-  refVertices: RefVertices[]
+  refVertices: RefVertices[],
+  scale: number,
+  translation: dia.Point
 }
 
 export interface TablePosition {
@@ -44,24 +46,22 @@ interface DbGraphEvents {
 // @ts-ignore
 function _leftRightAnchor(view: dia.ElementView, magnet: SVGElement, {x, y}: g.Point | SVGElement, opt: any) {
 
-  const angle = view.model.angle();
   const bbox = view.getNodeBBox(magnet);
-  const anchor = bbox.center();
-  const topLeft = bbox.origin();
-  const bottomRight = bbox.corner();
 
   let padding: number = opt.padding;
   if (!isFinite(padding)) padding = 0;
 
+  const bboxWithPadding = bbox.inflate(padding, padding);
+  const midLeft = bboxWithPadding.leftMiddle();
+  const midRight = bboxWithPadding.rightMiddle();
 
-  if ((topLeft.x + padding) <= x && x <= (bottomRight.x - padding)) {
-    const dx = (x - anchor.x);
-    anchor.y += (angle === 90 || angle === 270) ? 0 : dx * Math.tan(g.toRad(angle));
-    anchor.x += dx;
+  const dLeft = midLeft.squaredDistance({x, y});
+  const dRight = midLeft.squaredDistance({x, y});
+
+  if (dLeft < dRight) {
+    return midLeft;
   }
-
-  console.log(anchor, angle, bbox, anchor, topLeft, bottomRight);
-  return anchor;
+  return midRight;
 }
 
 export interface DbGraph {
@@ -115,10 +115,11 @@ export class DbGraph extends events.EventEmitter {
       defaultRouter: {
         name: 'manhattan',
         args: {
-          step: GRID_SIZE / 4.0,
+          step: GRID_SIZE,
           excludeTypes: ['db.TableGroupElement', 'db.RefLink'],
           startDirections: ['left', 'right'],
           endDirections: ['left', 'right'],
+          perpendicular: true
         }
       },
       defaultConnectionPoint: {
@@ -128,12 +129,12 @@ export class DbGraph extends events.EventEmitter {
         //   sticky: true
         // }
       },
-      connectionStrategy: connectionStrategies.pinAbsolute,
+      connectionStrategy: connectionStrategies.pinRelative,
       defaultAnchor: _leftRightAnchor,
-      defaultConnector: {
-        name: 'normal',
-        args: {}
-      },
+      // defaultConnector: {
+      //   name: 'normal',
+      //   args: {}
+      // },
       perpendicularLinks: true,
       drawGrid: {
         color: '#AAAAAAAA',
@@ -238,20 +239,33 @@ export class DbGraph extends events.EventEmitter {
 
     return {
       tablePositions,
-      refVertices
+      refVertices,
+      scale: this.scale,
+      translation: this.translation
     };
   }
 
   public syncPositions(positions: DbGraphPositions): void {
-    for (const tablePosition of positions.tablePositions) {
-      const tableCell: TableElement = <TableElement>this.graph.getCell(`table-${tablePosition.id}`)
-      if (!tableCell) continue
-      tableCell.position(tablePosition.x, tablePosition.y)
+    if (positions.tablePositions) {
+      for (const tablePosition of positions.tablePositions) {
+        const tableCell: TableElement = <TableElement>this.graph.getCell(`table-${tablePosition.id}`)
+        if (!tableCell) continue
+        tableCell.position(tablePosition.x, tablePosition.y)
+      }
     }
-    for (const refVertexes of positions.refVertices) {
-      const refCell: RefLink = <RefLink>this.graph.getCell(`ref-${refVertexes.id}`)
-      if (!refCell) continue
-      refCell.vertices(refVertexes.vertices)
+    if (positions.refVertices) {
+      for (const refVertexes of positions.refVertices) {
+        const refCell: RefLink = <RefLink>this.graph.getCell(`ref-${refVertexes.id}`)
+        if (!refCell) continue
+        refCell.vertices(refVertexes.vertices)
+      }
+    }
+
+    if(positions.scale) {
+      this.scale = positions.scale;
+    }
+    if(positions.translation) {
+      this.translation = positions.translation;
     }
 
     const allTableGroupCells = this._graph.getCells().filter(c => /^tablegroup-.*/.test(`${c.id}`))
@@ -261,6 +275,8 @@ export class DbGraph extends events.EventEmitter {
   }
 
   public syncTables(tables: Table[]): void {
+    if (!tables) tables = [];
+
     for (const table of tables) {
       this.addOrUpdateTable(table)
     }
@@ -274,6 +290,8 @@ export class DbGraph extends events.EventEmitter {
   }
 
   public syncTableGroups(tableGroups: TableGroup[]): void {
+    if (!tableGroups) tableGroups = [];
+
     for (const tableGroup of tableGroups) {
       this.addOrUpdateTableGroup(tableGroup);
     }
@@ -287,6 +305,8 @@ export class DbGraph extends events.EventEmitter {
   }
 
   public syncRefs(refs: Ref[]) {
+    if (!refs) refs = [];
+
     for (const ref of refs) {
       this.addOrUpdateRef(ref)
     }
@@ -410,7 +430,24 @@ export class DbGraph extends events.EventEmitter {
   }
 
   set scale(value: number) {
-    this._paper.scale(Math.min(this._zoomMax, Math.max(this._zoomMin, value)));
+    const newScale = Math.min(this._zoomMax, Math.max(this._zoomMin, value))
+    const s = this._paper.scale();
+    if(s.sx === newScale) return;
+
+    this._paper.scale(newScale);
+    this.emitPositions();
+  }
+
+  get translation(): dia.Point {
+    const t = this._paper.translate()
+    return {x: t.tx, y: t.ty};
+  }
+  set translation(t: dia.Point) {
+    const pt = this._paper.translate();
+    if(t.x === pt.tx && t.y === pt.ty) return;
+
+    this._paper.translate(t.x, t.y);
+    this.emitPositions();
   }
 
   get scaleMin(): number {
@@ -426,24 +463,23 @@ export class DbGraph extends events.EventEmitter {
     // const s = V(this._paper.viewport).scale();
     const o = {x, y};
 
-    const newScale = {
-      sx: s.sx * Math.pow(2, delta * this._zoomSensitivity),
-      sy: s.sy * Math.pow(2, delta * this._zoomSensitivity)
-    };
-
+    let newScale =  s.sx * Math.pow(2, delta * this._zoomSensitivity);
     // constrain to min/max
-    newScale.sx = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sx));
-    newScale.sy = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale.sy));
+    newScale = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale));
 
-    this._paper.scale(newScale.sx, newScale.sy);
+    this.scale = newScale;
   }
 
-  private onGraphChange(cell): void {
+  private onGraphChange(): void {
     if (this._elementPointerDown) {
       this._didChange = true;
-      const positions = this.exportPositions();
-      this.emit('update:positions', positions);
+      this.emitPositions();
     }
+  }
+
+  private emitPositions(): void {
+    const positions = this.exportPositions();
+    this.emit('update:positions', positions);
   }
 
   private onGraphAdd(cell: dia.Cell): void {
@@ -462,7 +498,8 @@ export class DbGraph extends events.EventEmitter {
         dx: np.x - p.x,
         dy: np.y - p.y
       };
-      this._paper.translate(d.dx, d.dy);
+      const t = this.translation;
+      this.translation = {x: d.dx, y: d.dy};
     }
   }
 
