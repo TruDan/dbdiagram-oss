@@ -32,6 +32,8 @@ $table-field-padding-y: 9px !default;
     --table-group-stroke-color: #696969;
     --table-group-name-color: #fbfbfb;
     --table-highlight-stroke-color: #3ea8de;
+
+    --table-tooltip-bg-color: rgba(0, 0, 0, 0.9);
   }
 
   &--light {
@@ -61,6 +63,7 @@ $table-field-padding-y: 9px !default;
     --table-group-stroke-color: #dfdfdf;
     --table-group-name-color: #555;
     --table-highlight-stroke-color: #3ea8de;
+    --table-tooltip-bg-color: rgba(255, 255, 255, 0.9);
   }
 }
 
@@ -187,6 +190,28 @@ $table-field-padding-y: 9px !default;
       }
     }
   }
+
+  .db-table, .db-field {
+    &-tooltip {
+      display: none;
+      min-width: 4rem;
+      min-height: 4rem;
+      position: absolute;
+
+      &__bg {
+        width: 4rem;
+        height: 4rem;
+        z-index: 1000;
+        fill: var(--table-tooltip-bg-color)
+      }
+    }
+  }
+
+  .db-table__highlight .db-table-tooltip,
+    .db-field__highlight .db-field-tooltip,
+    {
+      display: block;
+    }
 
   .ref, .db-ref, .db-relation {
     fill: none;

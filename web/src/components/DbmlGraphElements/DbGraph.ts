@@ -261,10 +261,10 @@ export class DbGraph extends events.EventEmitter {
       }
     }
 
-    if(positions.scale) {
+    if (positions.scale) {
       this.scale = positions.scale;
     }
-    if(positions.translation) {
+    if (positions.translation) {
       this.translation = positions.translation;
     }
 
@@ -432,7 +432,7 @@ export class DbGraph extends events.EventEmitter {
   set scale(value: number) {
     const newScale = Math.min(this._zoomMax, Math.max(this._zoomMin, value))
     const s = this._paper.scale();
-    if(s.sx === newScale) return;
+    if (s.sx === newScale) return;
 
     this._paper.scale(newScale);
     this.emitPositions();
@@ -442,9 +442,10 @@ export class DbGraph extends events.EventEmitter {
     const t = this._paper.translate()
     return {x: t.tx, y: t.ty};
   }
+
   set translation(t: dia.Point) {
     const pt = this._paper.translate();
-    if(t.x === pt.tx && t.y === pt.ty) return;
+    if (t.x === pt.tx && t.y === pt.ty) return;
 
     this._paper.translate(t.x, t.y);
     this.emitPositions();
@@ -463,7 +464,7 @@ export class DbGraph extends events.EventEmitter {
     // const s = V(this._paper.viewport).scale();
     const o = {x, y};
 
-    let newScale =  s.sx * Math.pow(2, delta * this._zoomSensitivity);
+    let newScale = s.sx * Math.pow(2, delta * this._zoomSensitivity);
     // constrain to min/max
     newScale = Math.max(this._zoomMin, Math.min(this._zoomMax, newScale));
 

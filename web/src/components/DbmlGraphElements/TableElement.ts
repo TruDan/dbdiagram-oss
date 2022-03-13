@@ -1,4 +1,4 @@
-import {dia, g} from "jointjs";
+import {dia, elementTools, g} from "jointjs";
 import {ACTION_COLOR, DARK_COLOR, FONT_FAMILY, HEADER_HEIGHT, LIGHT_COLOR, LINE_WIDTH, LIST_ADD_BUTTON_SIZE, LIST_GROUP_NAME, LIST_ITEM_GAP, LIST_ITEM_HEIGHT, LIST_ITEM_LABEL, LIST_ITEM_WIDTH, LIST_MAX_PORT_COUNT, PADDING_L, PADDING_M, PADDING_S, SECONDARY_DARK_COLOR} from "components/DbmlGraphElements/constants";
 import Field from "@dbml/core/types/model_structure/field";
 import Table from "@dbml/core/types/model_structure/table";
@@ -6,6 +6,7 @@ import Ref from "@dbml/core/types/model_structure/ref";
 import {RefLink} from "components/DbmlGraphElements/RefLink";
 import TableGroup from "@dbml/core/types/model_structure/tableGroup";
 import {TableGroupElement} from "components/DbmlGraphElements/TableGroupElement";
+import Backbone from "backbone";
 
 export const itemPosition = (portsArgs: dia.Element.Port[], elBBox: dia.BBox): g.Point[] => {
   return portsArgs.map((_port: dia.Element.Port, index: number, {length}) => {
@@ -16,6 +17,8 @@ export const itemPosition = (portsArgs: dia.Element.Port[], elBBox: dia.BBox): g
 };
 
 export class TableElement extends dia.Element {
+
+  private _tooltipEl: HTMLElement | undefined;
 
   defaults() {
     return {
@@ -44,16 +47,6 @@ export class TableElement extends dia.Element {
         headerText: {
           text: 'Label',
           y: (HEADER_HEIGHT/2)
-        },
-        tooltip: {
-          'class': 'db-table-tooltip',
-          display: 'none',
-        },
-        tooltipBody: {
-          'class': 'db-table-tooltip__bg'
-        },
-        tooltipText: {
-          'class': 'db-table-tooltip__text'
         }
       },
       markup: [
@@ -72,20 +65,6 @@ export class TableElement extends dia.Element {
             {
               tagName: 'text',
               selector: 'headerText',
-            }
-          ]
-        },
-        {
-          tagName: 'g',
-          selector: 'tooltip',
-          children: [
-            {
-              tagName: 'rect',
-              selector: 'tooltipBody'
-            },
-            {
-              tagName: 'text',
-              selector: 'tooltipText'
             }
           ]
         }
@@ -111,7 +90,7 @@ export class TableElement extends dia.Element {
                 'class': 'db-field__type',
                 x: `calc(w)`,
                 y: 'calc(0.5*h)'
-              },
+              }
             },
             size: {
               width: LIST_ITEM_WIDTH,
@@ -186,6 +165,20 @@ export class TableElement extends dia.Element {
     this.attr('headerBody.fill', headerColor);
   }
 
+
+  initTooltip() {
+    this._tooltipEl = document.createElement('g')
+  }
+
+  showTooltip() {
+    //cunt
+
+  }
+
+  hideTooltip() {
+    //cunt
+
+  }
 }
 
 export const createFieldPort = (field: Field) => ({
