@@ -79,6 +79,12 @@ $table-field-padding-y: 9px !default;
     }
   }
 
+  .db-chart__bg {
+    fill: #6f6f6f;
+    width: 100%;
+    height: 100%;
+  }
+
   .db-table {
     &-header {
       rect {
@@ -100,6 +106,7 @@ $table-field-padding-y: 9px !default;
         font-size: 16px;
         fill: var(--table-header-fg-color);
         pointer-events: none;
+        user-select: none;
       }
     }
 
@@ -132,6 +139,7 @@ $table-field-padding-y: 9px !default;
 
     text {
       pointer-events: none;
+      user-select: none;
     }
 
     &__name {
@@ -154,7 +162,17 @@ $table-field-padding-y: 9px !default;
     }
   }
 
-  .ref {
+  .db-tools {
+    &__bg {
+      fill: var(--table-header-color);
+    }
+    text {
+      fill: var(--table-header-fg-color);
+      transform: translateX(10px) translateY(.35em);
+    }
+  }
+
+  .db-ref, .ref {
     fill: none;
     stroke: var(--ref-color);
     stroke-width: 2;

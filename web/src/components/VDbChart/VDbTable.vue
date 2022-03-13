@@ -1,6 +1,7 @@
 <template>
   <svg
     ref="root"
+    :id="`table-${id}`"
     :class="{
       'db-table':true,
       'db-table__highlight': highlight,
@@ -73,7 +74,8 @@
         y: 0
       })
     },
-    containerRef: Object
+    containerRef: Object,
+    panZoom: Object
   })
 
   const localPosition = ref({
@@ -108,6 +110,7 @@
   const dragOffsetY = ref(null)
   const x = ref(0)
   const y = ref(0)
+  const dragOffset = ref(null);
 
   const onMouseEnter = (e) => {
     highlight.value = true
@@ -121,8 +124,9 @@
     offsetX,
     offsetY
   }) => {
-    x.value = offsetX - dragOffsetX.value
-    y.value = offsetY - dragOffsetY.value
+    const scale = 1.0 / props.panZoom.getZoom();
+    x.value = (offsetX)*scale - dragOffsetX.value
+    y.value = (offsetY)*scale - dragOffsetY.value
   }
   const drop = (e) => {
     dragging.value = false
@@ -140,8 +144,13 @@
   }) => {
     dragging.value = true
 
-    dragOffsetX.value = offsetX - x.value
-    dragOffsetY.value = offsetY - y.value
+    const scale = 1.0 / props.panZoom.getZoom();
+    const pan1 = props.panZoom.getPan();
+    const pan = {x: pan1.x / scale, y: pan1.y / scale};
+    dragOffsetX.value = offsetX - (x.value*scale)
+    dragOffsetY.value = offsetY - (y.value*scale)
+
+    dragOffset.value = props.containerRef.createSVGPoint();
     props.containerRef.addEventListener('mousemove', drag)
     props.containerRef.addEventListener('mouseup', drop)
     props.containerRef.addEventListener('mouseleave', onMouseLeave)

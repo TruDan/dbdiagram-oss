@@ -1,6 +1,7 @@
 <template>
   <svg
     ref="root"
+    :id="`field-${id}`"
     :class="{
       'db-field':true,
       'db-field__highlight': highlight,
@@ -37,78 +38,57 @@
   </svg>
 </template>
 
-<script>
+<script setup>
   import { computed, onMounted, ref } from 'vue'
 
-  export default {
-    name: 'VDbField',
-    props: {
-      id: Number,
-      selection: String,
-      token: Object,
-      name: String,
-      type: Object,
-      unique: Boolean,
-      pk: Boolean,
-      dbState: Object,
-      not_null: Boolean,
-      note: String,
-      dbdefault: Object,
-      increment: Boolean,
-      width: Number,
-      table: Object,
-      endpoints: Array,
-      _enum: Object
-    },
-    setup (props) {
-      const root = ref(null);
+  const props = defineProps({
+    id: Number,
+    selection: String,
+    token: Object,
+    name: String,
+    type: Object,
+    unique: Boolean,
+    pk: Boolean,
+    dbState: Object,
+    not_null: Boolean,
+    note: String,
+    dbdefault: Object,
+    increment: Boolean,
+    width: Number,
+    table: Object,
+    endpoints: Array,
+    _enum: Object
+  })
+  const root = ref(null)
 
-      const size = computed(() => ({
-        width: props.width,
-        height: 29
-      }))
+  const size = computed(() => ({
+    width: props.width,
+    height: 29
+  }))
 
-      const position = computed(() => ({
-        x: 0,
-        y: 32 + (props.table.fields.findIndex(f => f.id === props.id) * 29)
-      }))
+  const position = computed(() => ({
+    x: 0,
+    y: 32 + (props.table.fields.findIndex(f => f.id === props.id) * 29)
+  }))
 
+  const mounted = onMounted(() => {
+    // nothing so far
+  })
 
-      const mounted = onMounted(() => {
-        // nothing so far
-      })
-
-      const highlight = ref(false);
-      const dragging = ref(false);
-      const onMouseEnter = (e) => {
-        highlight.value = true;
-      };
-      const onMouseLeave = (e) => {
-        highlight.value = false;
-        dragging.value = false;
-      };
-      const onMouseUp = (e) => {
-        dragging.value = false;
-      };
-      const onMouseDown = (e) => {
-        dragging.value = true;
-      };
-
-      return {
-        root,
-        highlight,
-        dragging,
-        size,
-        position,
-        onMouseEnter,
-        onMouseLeave,
-        onMouseUp,
-        onMouseDown
-      }
-    }
+  const highlight = ref(false)
+  const dragging = ref(false)
+  const onMouseEnter = (e) => {
+    highlight.value = true
   }
+  const onMouseLeave = (e) => {
+    highlight.value = false
+    dragging.value = false
+  }
+  const onMouseUp = (e) => {
+    dragging.value = false
+  }
+  const onMouseDown = (e) => {
+    dragging.value = true
+  }
+
 </script>
-
-<style scoped>
-
-</style>
