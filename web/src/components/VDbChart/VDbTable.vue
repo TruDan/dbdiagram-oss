@@ -47,6 +47,7 @@
 <script setup>
   import { computed, ref } from 'vue'
   import VDbField from './VDbField'
+  import { useChartStore } from '../../store/chart'
 
   const props = defineProps({
     id: Number,
@@ -77,6 +78,8 @@
     containerRef: Object,
     panZoom: Object
   })
+
+  const store = useChartStore();
 
   const localPosition = ref({
     x: props.position.x,
@@ -124,9 +127,9 @@
     offsetX,
     offsetY
   }) => {
-    const scale = 1.0 / props.panZoom.getZoom();
-    x.value = (offsetX)*scale - dragOffsetX.value
-    y.value = (offsetY)*scale - dragOffsetY.value
+    const p = store.inverseCtm.transformPoint({x: offsetX, y: offsetY});
+    x.value = p.x - dragOffsetX.value
+    y.value = p.y - dragOffsetY.value
   }
   const drop = (e) => {
     dragging.value = false
@@ -144,11 +147,9 @@
   }) => {
     dragging.value = true
 
-    const scale = 1.0 / props.panZoom.getZoom();
-    const pan1 = props.panZoom.getPan();
-    const pan = {x: pan1.x / scale, y: pan1.y / scale};
-    dragOffsetX.value = offsetX - (x.value*scale)
-    dragOffsetY.value = offsetY - (y.value*scale)
+    const p = store.inverseCtm.transformPoint({x: offsetX, y: offsetY});
+    dragOffsetX.value = p.x - x.value;
+    dragOffsetY.value = p.y - y.value;
 
     dragOffset.value = props.containerRef.createSVGPoint();
     props.containerRef.addEventListener('mousemove', drag)

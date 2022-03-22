@@ -50,7 +50,7 @@ module.exports = configure(function (ctx) {
       server: {
         type: "http"
       },
-      port: 8080,
+      port: 3210,
       open: true // opens browser window automatically
     },
     framework: {
@@ -61,7 +61,8 @@ module.exports = configure(function (ctx) {
       // lang: 'en-US', // Quasar language pack
       plugins: [
         "Notify",
-        "Dialog"
+        "Dialog",
+        "Dark"
       ]
     },
 

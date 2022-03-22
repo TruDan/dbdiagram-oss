@@ -40,13 +40,13 @@
 
       <svg x="170" y="10" width="150" height="32" class="db-tools">
         <rect class="db-tools__bg" x="0" y="0" width="200" height="32"/>
-        <text x="0" y="16">x: {{ pan.x }}</text>
-        <text x="75" y="16">y: {{ pan.y }}</text>
+        <text x="0" y="16">x: {{ store.pan.x }}</text>
+        <text x="75" y="16">y: {{ store.pan.y }}</text>
       </svg>
 
       <svg x="340" y="10" width="150" height="32" class="db-tools">
         <rect class="db-tools__bg" x="0" y="0" width="200" height="32"/>
-        <text x="0" y="16">scale: {{ zoom }}</text>
+        <text x="0" y="16">scale: {{ store.zoom }}</text>
       </svg>
     </g>
   </svg>
@@ -57,6 +57,9 @@
   import VDbTable from './VDbTable'
   import VDbRef from './VDbRef'
   import svgPanZoom from 'svg-pan-zoom'
+  import { useChartStore } from '../../store/chart'
+
+  const store = useChartStore();
 
   const props = defineProps({
     tables: {
@@ -75,11 +78,6 @@
     x: 0,
     y: 0
   })
-  const pan = ref({
-    x: 0,
-    y: 0
-  })
-  const zoom = ref(1.0)
   let initialized = false
 
   const updatePosition = (index, position) => {
@@ -92,10 +90,9 @@
     offsetX,
     offsetY
   }) => {
-    position.value = {
-      x: offsetX,
-      y: offsetY
-    }
+    const p = store.ctm.transformPoint({x: offsetX, y: offsetY});
+    position.value.x = p.x;
+    position.value.y = p.y;
   }
 
   onMounted(() => {
@@ -103,9 +100,18 @@
       viewportSelector: '#viewport-layer',
       panEnabled: false,
       fit: false,
-      onPan: (newPan) => pan.value = newPan,
-      onZoom: (newZoom) => zoom.value = newZoom
-    })
+      onPan: (newPan) => {
+        store.updatePan(newPan);
+      },
+      onZoom: (newZoom) => {
+        store.updateZoom(newZoom);
+      },
+      onUpdatedCTM: (newCTM) => {
+        console.log('onUpdatedCTM', newCTM)
+        store.updateCTM(newCTM);
+      }
+    });
+    position.value = root.value.createSVGPoint();
     initialized = true
   })
 
