@@ -2,7 +2,7 @@
   <svg
     ref="root"
     class="db-chart"
-    @mousemove="updateCursorPosition"
+    @mousemove.passive="updateCursorPosition"
   >
     <g id="background-layer">
       <rect ref="bgRef" class="db-chart__bg"
@@ -19,12 +19,11 @@
                   :key="ref.id"
                   v-bind="ref"
                   :container-ref="root"
-                  :pan-zoom="panZoom" />
+                  :pan-zoom="panZoom"/>
       </g>
       <g id="tables-layer">
-        <v-db-table v-for="(table,i) of tables"
+        <v-db-table v-for="table of tables"
                     v-bind="table"
-                    @update:position="v => updatePosition(i,v)"
                     :key="table.id"
                     :container-ref="root"
                     :pan-zoom="panZoom"
@@ -53,13 +52,13 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, ref, watchEffect } from 'vue'
+  import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
   import VDbTable from './VDbTable'
   import VDbRef from './VDbRef'
   import svgPanZoom from 'svg-pan-zoom'
   import { useChartStore } from '../../store/chart'
 
-  const store = useChartStore();
+  const store = useChartStore()
 
   const props = defineProps({
     tables: {
@@ -71,7 +70,6 @@
       default: () => ([])
     }
   })
-  const emit = defineEmits(['update:tables'])
   const root = ref(null)
   const panZoom = ref({})
   const position = ref({
@@ -80,19 +78,44 @@
   })
   let initialized = false
 
-  const updatePosition = (index, position) => {
-    const tables = props.tables
-    tables[index].position = position
-    emit('update:tables', tables)
-  }
-
   const updateCursorPosition = ({
     offsetX,
     offsetY
   }) => {
-    const p = store.ctm.transformPoint({x: offsetX, y: offsetY});
-    position.value.x = p.x;
-    position.value.y = p.y;
+    const p = store.ctm.transformPoint({
+      x: offsetX,
+      y: offsetY
+    })
+    position.value.x = p.x
+    position.value.y = p.y
+  }
+
+  const saveSizes = () => {
+    const s = panZoom.value.getSizes()
+    const p = panZoom.value.getPan()
+    const z = panZoom.value.getZoom()
+    const pan = {
+      x: p.x - (s.width / 2),
+      y: p.y - (s.height / 2)
+    }
+    store.$patch({
+      pan: pan,
+      zoom: z
+    })
+  }
+
+  const loadSizes = () => {
+    const s = panZoom.value.getSizes()
+    const p = store.pan;
+    const z = store.zoom;
+    const pan = {
+      x: p.x,
+      y: p.y
+    }
+    panZoom.value.resize()
+    panZoom.value.center()
+    panZoom.value.zoom(z);
+    panZoom.value.panBy(pan);
   }
 
   onMounted(() => {
@@ -100,19 +123,38 @@
       viewportSelector: '#viewport-layer',
       panEnabled: false,
       fit: false,
-      onPan: (newPan) => {
-        store.updatePan(newPan);
-      },
-      onZoom: (newZoom) => {
-        store.updateZoom(newZoom);
-      },
-      onUpdatedCTM: (newCTM) => {
-        console.log('onUpdatedCTM', newCTM)
-        store.updateCTM(newCTM);
-      }
-    });
-    position.value = root.value.createSVGPoint();
+      center: false,
+      dblClickZoomEnabled: false,
+      zoomScaleSensitivity: 0.2,
+      minZoom: 0.1,
+      maxZoom: 2.0,
+      // onPan: (newPan) => {
+      //   saveSizes()
+      // },
+      // onZoom: (newZoom) => {
+      //   saveSizes()
+      // },
+      // onUpdatedCTM: (newCTM) => {
+      //   store.updateCTM(newCTM)
+      // }
+    })
+    nextTick(() => {
+      loadSizes()
+      panZoom.value.disablePan()
+      panZoom.value.setOnPan(() => saveSizes());
+      panZoom.value.setOnZoom(() => saveSizes());
+      panZoom.value.setOnUpdatedCTM((newCTM) => store.updateCTM(newCTM));
+    })
+    position.value = root.value.createSVGPoint()
     initialized = true
   })
 
+
+  watch(() => props.tables, () => {
+    panZoom.value.updateBBox();
+  })
+
+  watch(() => props.refs, () => {
+    panZoom.value.updateBBox();
+  })
 </script>

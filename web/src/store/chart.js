@@ -6,6 +6,8 @@ export const useChartStore = defineStore('chart', {
     pan: { x: 0, y: 0 },
     ctm: [ 1, 0, 0, 1, 0, 0 ],
     inverseCtm: [ 1, 0, 0, 1, 0, 0 ],
+    tables: {},
+    refs: {}
   }),
   getters: {
     getPan(state) {
@@ -16,6 +18,27 @@ export const useChartStore = defineStore('chart', {
     },
     getCTM(state) {
       return state.ctm;
+    },
+    getTable(state) {
+      return (tableId) => {
+        if(!(tableId in state.tables))
+          state.tables[tableId] = {
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 32
+          };
+        return state.tables[tableId];
+      }
+    },
+    getRef(state) {
+      return (refId) => {
+        if(!(refId in state.refs))
+          state.refs[refId] = {
+            endpoints: []
+          };
+        return state.refs[refId];
+      }
     }
   },
   actions: {
@@ -39,6 +62,17 @@ export const useChartStore = defineStore('chart', {
         ctm: DOMMatrix.fromMatrix(newCTM),
         inverseCtm: DOMMatrix.fromMatrix(newCTM).inverse()
       })
+    },
+
+    updateTable(tableId, newTable) {
+      this.tables.$patch({
+        [tableId]: newTable
+      });
+    },
+    updateRef(refId, newRef) {
+      this.refs.$patch({
+        [refId]: newRef
+      });
     }
   }
 })

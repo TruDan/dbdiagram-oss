@@ -64,6 +64,8 @@ module.exports = {
     '@typescript-eslint/no-inferrable-types': 'off',
     '@typescript-eslint/unbound-method': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',
+    '@typescript-eslint/restrict-plus-operands': 'off',
+    '@typescript-eslint/no-floating-promises': 'off',
     'no-undef': 'off',
     'no-redeclare': 'off',
     "quotes": 'off'

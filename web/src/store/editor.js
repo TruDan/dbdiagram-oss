@@ -20,10 +20,6 @@ export const useEditorStore = defineStore('editor', {
         }
       }
     },
-    positions: {
-      tablePositions: [],
-      refVertices: []
-    },
     database: {
       schemas: [
         {

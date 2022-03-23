@@ -7,24 +7,27 @@
       'db-table__highlight': highlight,
       'db-table__dragging': dragging
     }"
-    :x="x"
-    :y="y"
-    :width="size.width"
-    :height="size.height"
+    :x="state.x"
+    :y="state.y"
+    :width="state.width"
+    :height="state.height"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
     <rect class="db-table__background"
           x="0"
           y="0"
-          :width="size.width"
-          :height="size.height"
+          :width="state.width"
+          :height="state.height"
     />
     <g class="db-table-header"
-       @mousedown="startDrag">
+       @mousedown="startDrag"
+       @mouseenter="showTooltip"
+       @mouseleave="hideTooltip"
+    >
       <rect
         height="32"
-        :width="size.width"
+        :width="state.width"
         :fill="headerColor"
       />
       <text class="db-table-header__name"
@@ -38,14 +41,17 @@
       <v-db-field v-for="field of fields"
                   v-bind="field"
                   :key="field.id"
-                  :width="size.width"
+                  :width="state.width"
       />
     </g>
+    <svg class="db-table-tooltip" v-if="tooltip" :x="state.width + 20">
+      <rect :width="tooltipSize.width" :height="tooltipSize.height"/>
+    </svg>
   </svg>
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
   import VDbField from './VDbField'
   import { useChartStore } from '../../store/chart'
 
@@ -68,52 +74,43 @@
       type: Array,
       default: () => ([])
     },
-    position: {
-      type: Object,
-      default: () => ({
-        x: 0,
-        y: 0
-      })
-    },
     containerRef: Object,
     panZoom: Object
   })
 
-  const store = useChartStore();
+  const store = useChartStore()
 
-  const localPosition = ref({
-    x: props.position.x,
-    y: props.position.y
+  const state = computed(() => store.getTable(props.id))
+
+  const updateHeight = () => {
+    state.value.height = 32 + (29 * props.fields.length);
+  }
+
+  watch(() => props.fields, value => {
+    updateHeight();
+  });
+
+  onMounted(() => {
+    updateHeight();
   })
 
   const emit = defineEmits([
     'update:position'
   ])
 
-  const positionModel = computed({
-    get () {
-      return localPosition
-    },
-    set (value) {
-      localPosition.value.x = value.x
-      localPosition.value.y = value.y
-      emit('update:position', value)
-    }
-  })
   const root = ref(null)
 
-  const size = computed(() => ({
+  const tooltipSize = computed(() => ({
     width: 200,
     height: 32 + (29 * props.fields.length)
   }))
 
   const highlight = ref(false)
+  const tooltip = ref(false)
   const dragging = ref(false)
   const dragOffsetX = ref(null)
   const dragOffsetY = ref(null)
-  const x = ref(0)
-  const y = ref(0)
-  const dragOffset = ref(null);
+  const dragOffset = ref(null)
 
   const onMouseEnter = (e) => {
     highlight.value = true
@@ -127,9 +124,13 @@
     offsetX,
     offsetY
   }) => {
-    const p = store.inverseCtm.transformPoint({x: offsetX, y: offsetY});
-    x.value = p.x - dragOffsetX.value
-    y.value = p.y - dragOffsetY.value
+    const p = store.inverseCtm.transformPoint({
+      x: offsetX,
+      y: offsetY
+    })
+    state.value.x = p.x - dragOffsetX.value
+    state.value.y = p.y - dragOffsetY.value
+    emit('update:position', state.value)
   }
   const drop = (e) => {
     dragging.value = false
@@ -147,14 +148,25 @@
   }) => {
     dragging.value = true
 
-    const p = store.inverseCtm.transformPoint({x: offsetX, y: offsetY});
-    dragOffsetX.value = p.x - x.value;
-    dragOffsetY.value = p.y - y.value;
+    const p = store.inverseCtm.transformPoint({
+      x: offsetX,
+      y: offsetY
+    })
+    dragOffsetX.value = p.x - state.value.x
+    dragOffsetY.value = p.y - state.value.y
 
-    dragOffset.value = props.containerRef.createSVGPoint();
-    props.containerRef.addEventListener('mousemove', drag)
-    props.containerRef.addEventListener('mouseup', drop)
-    props.containerRef.addEventListener('mouseleave', onMouseLeave)
+    dragOffset.value = props.containerRef.createSVGPoint()
+    props.containerRef.addEventListener('mousemove', drag, { passive: true })
+    props.containerRef.addEventListener('mouseup', drop, { passive: true })
+    props.containerRef.addEventListener('mouseleave', onMouseLeave, { passive: true })
+  }
+
+  const showTooltip = () => {
+    tooltip.value = true
+  }
+
+  const hideTooltip = () => {
+    tooltip.value = false
   }
 </script>
 

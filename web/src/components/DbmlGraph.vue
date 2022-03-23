@@ -1,8 +1,8 @@
 <template>
   <div class="dbml-graph-wrapper">
     <v-db-chart v-if="schema"
-                v-model:tables="tables"
-                v-model:refs="refs"
+                :tables="schema.tables"
+                :refs="schema.refs"
     >
 
     </v-db-chart>
@@ -62,36 +62,6 @@
       editor.updateSelectionMarker(token.start, token.end)
     }
   }
-
-  const tables = computed({
-    get () {
-      if (!props.schema) return []
-      return props.schema.tables.map(table => ({
-        ...table,
-        position: props.positions && props.positions.tablePositions.find(p => p.id === table.id) || {
-          x: 0,
-          y: 0
-        }
-      }))
-    },
-    set (value) {
-      emit('update:positions', {
-        ...props.positions,
-        tablePositions: value.map(table => table.position)
-      })
-    }
-  })
-
-  const refs = computed({
-    get () {
-      if (!props.schema) return []
-      return props.schema.refs
-
-    },
-    set (value) {
-      // cunt
-    }
-  })
 
   const applyAutoLayout = () => {
     // do nothing

@@ -1,15 +1,16 @@
 <template>
-  <polyline
+  <path
     ref="root"
     class="db-ref"
-    :points="points"
+    :d="points"
   >
 
-  </polyline>
+  </path>
 </template>
 
 <script setup>
-  import { computed, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
+  import { computed, onBeforeUnmount, onMounted, onUpdated, ref, watch, watchEffect } from 'vue'
+  import { useChartStore } from '../../store/chart'
 
   const props = defineProps({
     id: Number,
@@ -29,28 +30,23 @@
     }
   })
 
-  const points = ref('')
+  const store = useChartStore()
 
-  const getPositionAnchors = (field) => {
-    const fieldEl = props.containerRef.getElementById(`field-${field.id}`)
-    const fieldX = parseFloat(fieldEl.getAttribute('x'))
-    const fieldY = parseFloat(fieldEl.getAttribute('y'))
+  const affectedTables = ref([])
+  const d = ref('')
 
-    const tableEl = props.containerRef.getElementById(`table-${field.table.id}`)
-    const tableX = parseFloat(tableEl.getAttribute('x'))
-    const tableY = parseFloat(tableEl.getAttribute('y'))
-
-    const fieldH = parseFloat(fieldEl.getAttribute('height'))
-    const fieldW = parseFloat(fieldEl.getAttribute('width'))
+  const getPositionAnchors = (endpoint) => {
+    const s = store.getTable(endpoint.fields[0].table.id)
+    const fieldIndex = endpoint.fields[0].table.fields.findIndex(f => f.id === endpoint.fields[0].id)
 
     return [
       {
-        x: (fieldX + tableX),
-        y: (fieldY + tableY) + (fieldH / 2.0)
+        x: s.x,
+        y: s.y + 32 + (29 * fieldIndex) + (29 / 2.0)
       },
       {
-        x: (fieldX + tableX) + fieldW,
-        y: (fieldY + tableY) + (fieldH / 2.0)
+        x: s.x + s.width,
+        y: s.y + 32 + (29 * fieldIndex) + (29 / 2.0)
       }
     ]
   }
@@ -68,39 +64,27 @@
         a: a,
         b: b
       })
-    ));
-    let smallest = withDistances[0];
-    for(const withDistance of withDistances) {
-      if(withDistance.distance < smallest.distance)  {
-        smallest = withDistance;
+    ))
+    let smallest = withDistances[0]
+    for (const withDistance of withDistances) {
+      if (withDistance.distance < smallest.distance) {
+        smallest = withDistance
       }
     }
 
-    return [smallest.a, smallest.b];
+    return [smallest.a, smallest.b]
   }
 
-  const computePoints = () => {
-    const startElAnchors = getPositionAnchors(props.endpoints[0].fields[0])
-    const endElAnchors = getPositionAnchors(props.endpoints[1].fields[0])
+  const points = computed(() => {
+    const startElAnchors = getPositionAnchors(props.endpoints[0])
+    const endElAnchors = getPositionAnchors(props.endpoints[1])
 
-    const [start, end] = getClosest(startElAnchors, endElAnchors);
+    const [start, end] = getClosest(startElAnchors, endElAnchors)
 
-    const positions = []
-    positions.push(`${start.x},${start.y}`)
-    positions.push(...props.vertices.map(v => `${v.x},${v.y}`))
-    positions.push(`${end.x},${end.y}`)
-
-    points.value = positions.join(' ')
-  }
-
-  onUpdated(() => {
-    computePoints()
+    return `M ${start.x},${start.y} C ${end.x},${start.y} ${start.x},${end.y} ${end.x},${end.y}`
   })
 
   onMounted(() => {
-    props.containerRef.addEventListener('DOMSubtreeModified', computePoints)
-  })
-  onBeforeUnmount(() => {
-    props.containerRef.removeEventListener(computePoints)
+    affectedTables.value = props.endpoints.map(e => store.getTable(e.fields[0].table.id));
   })
 </script>
