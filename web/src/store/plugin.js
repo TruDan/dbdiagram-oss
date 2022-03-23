@@ -1,33 +1,19 @@
 import { debounce, throttle, useQuasar, Dark } from "quasar";
+import { decode, encode, save, load } from "src/utils/storageUtils";
+import { useFilesStore } from "src/store/files";
 
-// const encode = (value) => btoa(JSON.stringify(value));
-// const decode = (encoded) => JSON.parse(atob(encoded));
-const encode = (value) => JSON.stringify(value);
-const decode = (encoded) => JSON.parse(encoded);
 
-const save = (key, value) => {
-  localStorage.setItem(`dbml-${key}`, encode(value));
-};
-const load = (key) => {
-  const value = localStorage.getItem(`dbml-${key}`);
-  if (value) {
-    return decode(value);
-  }
-  return undefined;
-};
-
-const throttledSave = debounce(save, 250);
+const throttledSave = debounce(save, 150);
+const autoSave = debounce(() => {
+  console.log("autosave");
+  const files = useFilesStore();
+  files.saveFile()
+}, 200);
 
 export default ({ store }) => {
   if (store.$id === "editor") {
 
-    const q = useQuasar();
-
-    const throttledDatabaseUpdate = debounce(() => store.updateDatabase(), 250);
-    const autoSave = debounce(() => {
-      console.log("autosave");
-      store.saveFile()
-    }, 500);
+    const throttledDatabaseUpdate = debounce(() => store.updateDatabase(), 100);
     const handlePreferencesUpdate = (payload) => {
       if(!payload) {
         return;
@@ -38,15 +24,11 @@ export default ({ store }) => {
     };
 
     (() => {
-      const currentFile = load("currentFile") || 'Untitled';
       const preferences = load("preferences") || {};
 
       store.$patch({
-        currentFile: currentFile,
         preferences: preferences
       });
-      store.loadFileList();
-      store.loadFile(currentFile);
       handlePreferencesUpdate(preferences);
     })();
 
@@ -56,9 +38,6 @@ export default ({ store }) => {
           throttledDatabaseUpdate();
           autoSave();
         }
-        if ("currentFile" in mutation.payload) {
-          throttledSave("currentFile", state.currentFile);
-        }
         if ("preferences" in mutation.payload) {
           throttledSave("preferences", state.preferences);
           handlePreferencesUpdate(mutation.payload.preferences);
@@ -66,16 +45,26 @@ export default ({ store }) => {
       }
     });
   } else if (store.$id === "chart") {
+    store.$subscribe((mutation, state) => {
+      autoSave();
+    });
+  }
+  else if(store.$id === "files") {
 
     (() => {
-      const chart = load("chart");
-      store.$patch(chart);
+      const currentFile = load("currentFile") || 'Untitled';
+      store.$patch({
+        currentFile: currentFile
+      });
+      store.loadFileList();
+      store.loadFile(currentFile);
     })();
 
     store.$subscribe((mutation, state) => {
-      console.log(mutation, state);
-      if (mutation.storeId === "chart") {
-        throttledSave("chart", state);
+      if (mutation.storeId === "files" && mutation.payload) {
+        if ("currentFile" in mutation.payload) {
+          throttledSave("currentFile", state.currentFile);
+        }
       }
     });
   }

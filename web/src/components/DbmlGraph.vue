@@ -7,45 +7,48 @@
 
     </v-db-chart>
     <div class="dbml-toolbar-wrapper">
-      <q-toolbar class="bg-dark text-white rounded-borders shadow-6">
-        <q-btn
-          class="q-mr-xs q-px-md"
-          color="secondary"
-          dense
-          @click="applyAutoLayout"
-        >
-          Auto-Layout
-        </q-btn>
-        <q-btn
-          class="q-mx-xs q-px-md"
-          color="secondary"
-          dense
-          @click="applyScaleToFit">
-          Fit
-        </q-btn>
-        <q-space />
+      <q-card class="shadow-6">
+        <q-toolbar class="rounded-borders">
+          <q-btn
+            class="q-mr-xs q-px-md"
+            color="secondary"
+            dense
+            @click="applyAutoLayout"
+          >
+            Auto-Layout
+          </q-btn>
+          <q-btn
+            class="q-mx-xs q-px-md"
+            color="secondary"
+            dense
+            @click="applyScaleToFit">
+            Fit
+          </q-btn>
+          <q-space/>
 
-        <q-slider
-          class="q-mx-sm"
-          style="width: 25%; min-width: 100px; max-width: 200px;"
-          v-model="scale"
-          :min="minScale"
-          :max="maxScale"
-        />
+          <q-slider
+            class="q-mx-sm"
+            style="width: 25%; min-width: 100px; max-width: 200px;"
+            v-model="scale"
+            :min="minScale"
+            :max="maxScale"
+          />
           <div
             class="q-mx-sm non-selectable"
-            style="width: 2.5rem; flex: 0 0 auto;">{{Math.round(scale)}} %</div>
+            style="width: 2.5rem; flex: 0 0 auto;">{{ Math.round(scale) }} %
+          </div>
 
-      </q-toolbar>
+        </q-toolbar>
+      </q-card>
     </div>
   </div>
 </template>
 
 <script setup>
-  import { DbGraph } from 'components/DbmlGraphElements/DbGraph'
   import { useEditorStore } from '../store/editor'
   import { computed, onMounted, ref, watch } from 'vue'
   import VDbChart from './VDbChart/VDbChart'
+  import { useChartStore } from '../store/chart'
 
   const props = defineProps({
     schema: {
@@ -62,6 +65,7 @@
     'update:positions',
   ])
   const editor = useEditorStore()
+  const chart = useChartStore()
 
   const locateTable = (tableId) => {
     const table = editor.findTable(tableId)
@@ -79,18 +83,16 @@
   }
 
   const scale = computed({
-    get() {
-      return (graphRef.value && graphRef.value.scale || 1) * 100.0;
+    get () {
+      return (chart.zoom || 1) * 100.0
     },
-    set(value) {
-      graphRef.value.scale = (value / 100.0)
-      editor.updateScale(graphRef.value.scale);
+    set (value) {
+      chart.updateZoom(value / 100.0)
     }
   })
 
-  const minScale = computed(() => (graphRef.value && graphRef.value.scaleMin || 1) * 100.0);
-  const maxScale = computed(() => (graphRef.value && graphRef.value.scaleMax || 1) * 100.0);
-
+  const minScale = ref(10)
+  const maxScale = ref(200)
 
   const applyAutoLayout = () => {
     // do nothing

@@ -157,4 +157,8 @@
   watch(() => props.refs, () => {
     panZoom.value.updateBBox();
   })
+
+  watch(() => store.zoom, (newZoom) => {
+    panZoom.value.zoom(newZoom);
+  })
 </script>
