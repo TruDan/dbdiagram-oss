@@ -7,20 +7,35 @@
 
     </v-db-chart>
     <div class="dbml-toolbar-wrapper">
-      <q-toolbar class="bg-dark text-white q-btn--rounded">
+      <q-toolbar class="bg-dark text-white rounded-borders shadow-6">
         <q-btn
-          flat
+          class="q-mr-xs q-px-md"
+          color="secondary"
           dense
           @click="applyAutoLayout"
         >
           Auto-Layout
         </q-btn>
         <q-btn
-          flat
+          class="q-mx-xs q-px-md"
+          color="secondary"
           dense
           @click="applyScaleToFit">
           Fit
         </q-btn>
+        <q-space />
+
+        <q-slider
+          class="q-mx-sm"
+          style="width: 25%; min-width: 100px; max-width: 200px;"
+          v-model="scale"
+          :min="minScale"
+          :max="maxScale"
+        />
+          <div
+            class="q-mx-sm non-selectable"
+            style="width: 2.5rem; flex: 0 0 auto;">{{Math.round(scale)}} %</div>
+
       </q-toolbar>
     </div>
   </div>
@@ -62,6 +77,20 @@
       editor.updateSelectionMarker(token.start, token.end)
     }
   }
+
+  const scale = computed({
+    get() {
+      return (graphRef.value && graphRef.value.scale || 1) * 100.0;
+    },
+    set(value) {
+      graphRef.value.scale = (value / 100.0)
+      editor.updateScale(graphRef.value.scale);
+    }
+  })
+
+  const minScale = computed(() => (graphRef.value && graphRef.value.scaleMin || 1) * 100.0);
+  const maxScale = computed(() => (graphRef.value && graphRef.value.scaleMax || 1) * 100.0);
+
 
   const applyAutoLayout = () => {
     // do nothing

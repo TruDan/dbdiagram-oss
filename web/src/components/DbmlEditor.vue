@@ -16,6 +16,7 @@
   import { computed, ref, watch } from 'vue'
   import { useEditorStore } from 'src/store/editor'
   import { Range } from 'ace-builds'
+  import { InlineAnnotation } from './ace/inline_annotation';
 
   export default {
     name: 'DbmlEditor',
@@ -24,10 +25,12 @@
     },
     props: ['source'],
     setup (props, { emit }) {
+      /** @type Ace.Editor */
       let ace = null
       const editor = useEditorStore()
       const currentMarkerRef = ref({
         markerId: null,
+        errorMarkerId: null
       })
 
       const sourceCode = computed({
@@ -47,6 +50,7 @@
         }
         const range = new Range(start.row - 1, start.col - 1, end.row - 1, end.col - 1)
         ace.focus()
+        ace.clearSelection()
         ace.moveCursorTo(start.row - 1, start.col - 1)
         currentMarkerRef.value.markerId = ace.session.addMarker(range, 'ace_active-line', 'text')
         console.log('highlightTokenRange', currentMarkerRef.value.markerId, start, end)
@@ -54,11 +58,14 @@
 
       const editorInit = (editor) => {
         ace = editor
-        ace.on
-      };
+      }
 
       const options = ref({
-        useWorker: true,
+        useWorker: false,
+        tabSize: 2,
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        showPrintMargin: false
       })
 
       const subscription = editor.$subscribe((mutation, state) => {
@@ -71,6 +78,7 @@
             const range = editor.source.markers.selection
             const startToken = range.start
             const endToken = range.end
+
             highlightTokenRange({
               row: startToken.line,
               col: startToken.column
@@ -78,6 +86,28 @@
               row: endToken.line,
               col: endToken.column
             })
+          }
+
+          if ('parserError' in mutation.payload) {
+            ace.session.clearAnnotations()
+            if(currentMarkerRef.value.errorMarkerId) {
+              ace.session.removeMarker(currentMarkerRef.value.errorMarkerId);
+              currentMarkerRef.value.errorMarkerId = null;
+            }
+
+            if (mutation.payload.parserError) {
+              const e = state.parserError
+              ace.session.setAnnotations([
+                new InlineAnnotation(ace.session, {
+                  text: e.message,
+                  type: e.type,
+                  row: e.location.start.row,
+                  column: e.location.start.col,
+                  endRow: e.location.end.row,
+                  endColumn: e.location.end.col
+                })
+              ])
+            }
           }
         }
       })

@@ -42,6 +42,7 @@ module.exports = configure(function (ctx) {
     ],
     build: {
       env: require("dotenv").config().parsed,
+      publicPath: ctx.prod ? '/dbdiagram-oss/' : '/',
       vueRouterMode: "history",
       chainWebpack(/* chain */) {
       }
@@ -60,6 +61,7 @@ module.exports = configure(function (ctx) {
       iconSet: "material-icons",
       // lang: 'en-US', // Quasar language pack
       plugins: [
+        "Dark",
         "Notify",
         "Dialog",
         "Dark"

@@ -1,6 +1,5 @@
 import { boot } from "quasar/wrappers";
 import ace from "ace-builds/src-noconflict/ace";
-// import workerJsonUrl from 'file-loader?esModule=false!src/ace/mode/dbml.js'; // For webpack / vue-cli
 import "ace-builds/src-noconflict/ext-beautify.js";
 import "ace-builds/src-noconflict/ext-code_lens.js";
 import "ace-builds/src-noconflict/ext-elastic_tabstops_lite.js";
@@ -23,10 +22,12 @@ import "ace-builds/src-noconflict/ext-statusbar.js";
 import "ace-builds/src-noconflict/ext-textarea.js";
 import "ace-builds/src-noconflict/ext-themelist.js";
 import "ace-builds/src-noconflict/ext-whitespace.js";
+
 import "ace-builds/src-noconflict/keybinding-emacs.js";
 import "ace-builds/src-noconflict/keybinding-sublime.js";
 import "ace-builds/src-noconflict/keybinding-vim.js";
 import "ace-builds/src-noconflict/keybinding-vscode.js";
+
 import "ace-builds/src-noconflict/theme-ambiance.js";
 import "ace-builds/src-noconflict/theme-chaos.js";
 import "ace-builds/src-noconflict/theme-chrome.js";
@@ -66,22 +67,16 @@ import "ace-builds/src-noconflict/theme-tomorrow_night_eighties.js";
 import "ace-builds/src-noconflict/theme-twilight.js";
 import "ace-builds/src-noconflict/theme-vibrant_ink.js";
 import "ace-builds/src-noconflict/theme-xcode.js";
+
 import "ace-builds/src-noconflict/worker-base.js";
-import "ace-builds/src-noconflict/worker-coffee.js";
-import "ace-builds/src-noconflict/worker-css.js";
-import "ace-builds/src-noconflict/worker-html.js";
-import "ace-builds/src-noconflict/worker-javascript.js";
-import "ace-builds/src-noconflict/worker-json.js";
-import "ace-builds/src-noconflict/worker-lua.js";
-import "ace-builds/src-noconflict/worker-php.js";
-import "ace-builds/src-noconflict/worker-xml.js";
-import "ace-builds/src-noconflict/worker-xquery.js";
+
 import workerJsonUrl from "file-loader?type=commonjs|target=es5|esModule=false!app/public/mode-dbml.js"; // For webpack / vue-cli
 
 export default boot(({ app }) => {
 
-
   ace.config.setModuleUrl("ace/mode/dbml", workerJsonUrl);
+
   const themes = ace.require("ace/ext/themelist");
-  console.log(themes, ace);
+
+
 });

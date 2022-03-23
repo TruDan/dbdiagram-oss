@@ -1,4 +1,4 @@
-import { debounce, throttle, useQuasar } from "quasar";
+import { debounce, throttle, useQuasar, Dark } from "quasar";
 
 // const encode = (value) => btoa(JSON.stringify(value));
 // const decode = (encoded) => JSON.parse(atob(encoded));
@@ -13,7 +13,7 @@ const load = (key) => {
   if (value) {
     return decode(value);
   }
-  return {};
+  return undefined;
 };
 
 const throttledSave = debounce(save, 250);
@@ -24,32 +24,40 @@ export default ({ store }) => {
     const q = useQuasar();
 
     const throttledDatabaseUpdate = debounce(() => store.updateDatabase(), 250);
+    const autoSave = debounce(() => {
+      console.log("autosave");
+      store.saveFile()
+    }, 500);
     const handlePreferencesUpdate = (payload) => {
+      if(!payload) {
+        return;
+      }
       if (payload.dark !== undefined) {
-        q.dark.set(payload.dark);
+        Dark.set(payload.dark);
       }
     };
 
     (() => {
-      const source = load("source");
-      const preferences = load("preferences");
+      const currentFile = load("currentFile") || 'Untitled';
+      const preferences = load("preferences") || {};
 
       store.$patch({
-        source,
-        preferences
+        currentFile: currentFile,
+        preferences: preferences
       });
+      store.loadFileList();
+      store.loadFile(currentFile);
       handlePreferencesUpdate(preferences);
-
-      setTimeout(() => {
-        store.updateDatabase();
-      }, 250);
     })();
 
     store.$subscribe((mutation, state) => {
       if (mutation.storeId === "editor" && mutation.payload) {
         if ("source" in mutation.payload) {
-          throttledSave("source", state.source);
           throttledDatabaseUpdate();
+          autoSave();
+        }
+        if ("currentFile" in mutation.payload) {
+          throttledSave("currentFile", state.currentFile);
         }
         if ("preferences" in mutation.payload) {
           throttledSave("preferences", state.preferences);

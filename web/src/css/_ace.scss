@@ -1,0 +1,17 @@
+$ace-marker-offset: 2px !default;
+$ace-marker-thickness: 2px !default;
+
+@mixin ace-marker($type, $color, $offset: $ace-marker-offset, $thickness: $ace-marker-thickness) {
+  .marker-highlight-#{$type} {
+    position: absolute;
+    z-index: 1000;
+    margin-top: $offset;
+    border-bottom: $thickness solid $color;
+  }
+}
+
+@include ace-marker('warning', var(--q-warning));
+@include ace-marker('error', var(--q-negative));
+@include ace-marker('info', var(--q-info));
+
+

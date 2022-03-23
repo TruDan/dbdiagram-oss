@@ -1,0 +1,37 @@
+name: Deploy to Github Pages
+on:
+  push:
+    branches:
+      - master
+jobs:
+  gh-pages-deploy:
+    name: Deploying to Github Pages
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+        - uses: actions/setup-node@v2
+          with:
+            node-version: '16'
+            cache: 'yarn'
+            cache-dependency-path: '**/yarn.lock'
+
+        - name: Install packages
+          working-directory: web
+          shell: bash
+          run: yarn install --frozen-lockfile
+
+        - name: Build Vue app
+          working-directory: web
+          shell: bash
+          run: yarn build
+
+        - name: Deploy to GitHub Pages
+          working-directory: web
+          shell: bash
+          run: |
+            pushd dist/spa
+            ln -s index.html 404.html
+            popd
+            git config --global user.email "${{ secrets.OCTOKIT_EMAIL }}"
+            git config --global user.name "${{ github.repository_owner }}"
+            yarn deploy
