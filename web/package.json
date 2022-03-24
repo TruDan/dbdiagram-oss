@@ -22,6 +22,7 @@
     "core-js": "^3.6.5",
     "jointjs": "^3.5.3",
     "jquery": "^3.6.0",
+    "pathfinding": "^0.4.18",
     "pinia": "^2.0.11",
     "quasar": "^2.5.5",
     "svg-pan-zoom": "^3.6.1",

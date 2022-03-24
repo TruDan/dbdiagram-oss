@@ -11,8 +11,8 @@
     :y="state.y"
     :width="state.width"
     :height="state.height"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
+    @mouseenter.passive="onMouseEnter"
+    @mouseleave.passive="onMouseLeave"
   >
     <rect class="db-table__background"
           x="0"
@@ -21,9 +21,9 @@
           :height="state.height"
     />
     <g class="db-table-header"
-       @mousedown="startDrag"
-       @mouseenter="showTooltip"
-       @mouseleave="hideTooltip"
+       @mousedown.passive="startDrag"
+       @mouseenter.passive="showTooltip"
+       @mouseleave.passive="hideTooltip"
     >
       <rect
         height="32"
@@ -82,23 +82,36 @@
 
   const state = computed(() => store.getTable(props.id))
 
+  const root = ref(null)
+
+  const updateWidth = () => {
+    if(!root.value) return;
+    const fieldEls = [...root.value.querySelectorAll('.db-field')];
+    const maxFieldWidth = fieldEls.map(f => [...f.querySelectorAll('text')].map(ft => ft.getComputedTextLength())
+      .reduce((prev,curr) => prev + curr, 3*16))
+      .reduce((prev,curr) => Math.max(prev, curr));
+
+    state.value.width = Math.max(200, maxFieldWidth)
+  }
+
   const updateHeight = () => {
     state.value.height = 32 + (29 * props.fields.length);
   }
 
   watch(() => props.fields, value => {
     updateHeight();
+    updateWidth();
   });
 
   onMounted(() => {
     updateHeight();
+    updateWidth();
   })
 
   const emit = defineEmits([
     'update:position'
   ])
 
-  const root = ref(null)
 
   const tooltipSize = computed(() => ({
     width: 200,
@@ -111,6 +124,7 @@
   const dragOffsetX = ref(null)
   const dragOffsetY = ref(null)
   const dragOffset = ref(null)
+  const gridSize = 10;
 
   const onMouseEnter = (e) => {
     highlight.value = true
@@ -128,8 +142,8 @@
       x: offsetX,
       y: offsetY
     })
-    state.value.x = p.x - dragOffsetX.value
-    state.value.y = p.y - dragOffsetY.value
+    state.value.x = Math.round((p.x - dragOffsetX.value)/gridSize)*gridSize
+    state.value.y = Math.round((p.y - dragOffsetY.value)/gridSize)*gridSize
     emit('update:position', state.value)
   }
   const drop = (e) => {

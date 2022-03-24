@@ -148,7 +148,7 @@ $table-field-padding-y: 9px !default;
       overflow:visible;
       .db-table__background {
         stroke: var(--table-highlight-stroke-color);
-        stroke-width: 2px;
+        stroke-width: 5px;
         stroke-linejoin: round;
         stroke-linecap: round;
         stroke-opacity: 0.6;
@@ -231,12 +231,29 @@ $table-field-padding-y: 9px !default;
     display: block;
   }
 
-  .ref, .db-ref, .db-relation {
-    fill: none;
-    stroke: var(--ref-color);
-    stroke-width: 2;
-    stroke-linejoin: round;
+  .db-ref {
+    &__path {
+      fill: none;
+      stroke: var(--ref-color);
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: butt;
+    }
+    &__hitbox {
+      fill: none;
+      stroke: transparent;
+      //stroke: var(--ref-color);
+      stroke-width: 29;
+
+    }
+
+    &__highlight {
+      .db-ref__path {
+        stroke: var(--ref-highlight-color);
+      }
+    }
   }
+
   .grid {
     stroke: #16a085;
     stroke-width: 0.5;

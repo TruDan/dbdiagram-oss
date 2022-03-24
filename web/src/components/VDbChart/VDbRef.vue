@@ -1,11 +1,23 @@
 <template>
-  <path
+  <g
     ref="root"
-    class="db-ref"
-    :d="points"
+    :class="{
+      'db-ref':true,
+      'db-ref__highlight': highlight
+    }"
+    @mouseenter.passive="onMouseEnter"
+    @mouseleave.passive="onMouseLeave"
   >
+    <path
+      class="db-ref__hitbox"
+      :d="points"
+    />
+    <path
+      class="db-ref__path"
+      :d="points"
+    />
 
-  </path>
+  </g>
 </template>
 
 <script setup>
@@ -32,6 +44,7 @@
 
   const store = useChartStore()
 
+  const highlight = ref(false)
   const affectedTables = ref([])
   const d = ref('')
 
@@ -75,16 +88,49 @@
     return [smallest.a, smallest.b]
   }
 
+  const gridSize = 10;
+
   const points = computed(() => {
     const startElAnchors = getPositionAnchors(props.endpoints[0])
     const endElAnchors = getPositionAnchors(props.endpoints[1])
 
     const [start, end] = getClosest(startElAnchors, endElAnchors)
+    const minX = Math.min(start.x, end.x)
+    const minY = Math.min(start.y, end.y)
+    const maxX = Math.max(start.x, end.x)
+    const maxY = Math.max(start.y, end.y)
+    const midX = Math.round((minX + ((maxX - minX) / 2))/gridSize)*gridSize
+    const midY = Math.round((minY + ((maxY - minY) / 2))/gridSize)*gridSize
+    const mid = {
+      x: midX,
+      y: midY
+    }
 
-    return `M ${start.x},${start.y} C ${end.x},${start.y} ${start.x},${end.y} ${end.x},${end.y}`
+    const points = [
+//      start,
+      {
+        x: mid.x,
+        y: start.y
+      },
+      {
+        x: mid.x,
+        y: end.y
+      },
+      end
+    ]
+
+    return `M ${start.x},${start.y} L ${points.map(p => (`${p.x},${p.y}`)).join(' ')}`
   })
 
+  const onMouseEnter = (e) => {
+    highlight.value = true
+  }
+  const onMouseLeave = (e) => {
+    highlight.value = false
+    dragging.value = false
+  }
+
   onMounted(() => {
-    affectedTables.value = props.endpoints.map(e => store.getTable(e.fields[0].table.id));
+    affectedTables.value = props.endpoints.map(e => store.getTable(e.fields[0].table.id))
   })
 </script>

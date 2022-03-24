@@ -16,10 +16,10 @@
     :y="position.y"
     :width="size.width"
     :height="size.height"
-    @mousedown="onMouseDown"
-    @mouseup="onMouseUp"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
+    @mousedown.passive="onMouseDown"
+    @mouseup.passive="onMouseUp"
+    @mouseenter.passive="onMouseEnter"
+    @mouseleave.passive="onMouseLeave"
   >
     <rect
       :height="size.height"
