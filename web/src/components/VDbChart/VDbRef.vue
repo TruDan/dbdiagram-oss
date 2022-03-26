@@ -35,7 +35,6 @@
     database: Object,
     token: Object,
     containerRef: Object,
-    panZoom: Object,
     vertices: {
       type: Array,
       default: () => ([])
@@ -127,7 +126,6 @@
   }
   const onMouseLeave = (e) => {
     highlight.value = false
-    dragging.value = false
   }
 
   onMounted(() => {

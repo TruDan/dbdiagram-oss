@@ -1,14 +1,6 @@
-@import "jointjs";
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
-
-$table-font-family: 'Source Sans 3', monospace !default;
-$table-border-width: 2 !default;
-
-$table-header-padding-x: 8px !default;
-$table-header-padding-y: 9px !default;
-
-$table-field-padding-x: 8px !default;
-$table-field-padding-y: 9px !default;
+@import "VDbChart/variables";
+@import "VDbChart";
 
 .body {
   &--dark {
@@ -88,126 +80,6 @@ $table-field-padding-y: 9px !default;
     height: 100%;
   }
 
-  .db-tablegroup {
-    pointer-events: none;
-
-    &__bg {
-      fill: var(--table-group-color);
-      stroke: var(--table-group-stroke-color);
-      stroke-width: 1px;
-      stroke-linejoin: round;
-      stroke-linecap: round;
-      stroke-opacity: 0.6;
-    }
-
-    &-header {
-      pointer-events: all;
-      fill: none;
-
-      &__text {
-        fill: var(--table-group-name-color);
-        transform: translateX(10px) translateY(.35em);
-        font-weight: 700;
-        font-size: 14px;
-        pointer-events: none;
-      }
-
-      &__separator {
-        stroke: var(--table-group-stroke-color);
-      }
-    }
-  }
-
-  .db-table {
-    &-header {
-      rect {
-        cursor: grab;
-
-        &:active {
-          cursor: grabbing;
-        }
-
-        &:not([fill]), &[fill="undefined"]{
-          fill: var(--table-header-color);
-        }
-      }
-
-
-      text, &__name {
-        transform: translate($table-header-padding-x, $table-header-padding-y);
-        font-weight: 700;
-        font-size: 16px;
-        fill: var(--table-header-fg-color);
-        pointer-events: none;
-        user-select: none;
-      }
-    }
-
-    &__highlight {
-
-      overflow:visible;
-      .db-table__background {
-        stroke: var(--table-highlight-stroke-color);
-        stroke-width: 5px;
-        stroke-linejoin: round;
-        stroke-linecap: round;
-        stroke-opacity: 0.6;
-      }
-
-      .db-field__ref {
-        rect {
-          fill: var(--highlight-field-color);
-        }
-      }
-    }
-  }
-
-  .db-field {
-    vertical-align: middle;
-    cursor: default;
-
-    rect {
-      fill: var(--field-bg-color);
-    }
-
-    text {
-      pointer-events: none;
-      user-select: none;
-    }
-
-    &__name {
-      fill: var(--field-name-color);
-      font-size: 12px;
-      transform: translateX(10px) translateY(.35em);
-    }
-
-    &__type {
-      font-size: 12px;
-      fill: var(--field-type-color);
-      text-anchor: end;
-      transform: translateX(-10px) translateY(.35em);
-    }
-
-    &__pk {
-      font-weight: 800;
-    }
-
-    &.db-field--highlight, &__highlight {
-      rect {
-        fill: var(--highlight-field-color);
-      }
-    }
-  }
-
-  .db-tools {
-    &__bg {
-      fill: var(--table-header-color);
-    }
-    text {
-      fill: var(--table-header-fg-color);
-      transform: translateX(10px) translateY(.35em);
-    }
-  }
 
   .db-table, .db-field {
     &-tooltip {
@@ -229,29 +101,6 @@ $table-field-padding-y: 9px !default;
   .db-field__highlight .db-field-tooltip,
   {
     display: block;
-  }
-
-  .db-ref {
-    &__path {
-      fill: none;
-      stroke: var(--ref-color);
-      stroke-width: 2;
-      stroke-linejoin: round;
-      stroke-linecap: butt;
-    }
-    &__hitbox {
-      fill: none;
-      stroke: transparent;
-      //stroke: var(--ref-color);
-      stroke-width: 29;
-
-    }
-
-    &__highlight {
-      .db-ref__path {
-        stroke: var(--ref-highlight-color);
-      }
-    }
   }
 
   .grid {

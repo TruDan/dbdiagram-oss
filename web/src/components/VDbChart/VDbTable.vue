@@ -74,8 +74,7 @@
       type: Array,
       default: () => ([])
     },
-    containerRef: Object,
-    panZoom: Object
+    containerRef: Object
   })
 
   const store = useChartStore()

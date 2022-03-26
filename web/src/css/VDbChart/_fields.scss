@@ -1,0 +1,38 @@
+
+
+.db-field {
+  vertical-align: middle;
+  cursor: default;
+
+  rect {
+    fill: var(--field-bg-color);
+  }
+
+  text {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__name {
+    fill: var(--field-name-color);
+    font-size: 12px;
+    transform: translateX(10px) translateY(.35em);
+  }
+
+  &__type {
+    font-size: 12px;
+    fill: var(--field-type-color);
+    text-anchor: end;
+    transform: translateX(-10px) translateY(.35em);
+  }
+
+  &__pk {
+    font-weight: 800;
+  }
+
+  &.db-field--highlight, &__highlight {
+    rect {
+      fill: var(--highlight-field-color);
+    }
+  }
+}

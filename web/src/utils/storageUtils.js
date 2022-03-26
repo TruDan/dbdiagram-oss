@@ -16,7 +16,7 @@ export const save = (key, value) => {
 
 export const load = (key) => {
   const value = localStorage.getItem(`dbml-${key}`);
-  if (value) {
+  if (value && value !== 'undefined') {
     return decode(value);
   }
   return undefined;

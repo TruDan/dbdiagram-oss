@@ -1,0 +1,45 @@
+@import "variables";
+
+.db-table {
+  &-header {
+    rect {
+      cursor: grab;
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      &:not([fill]), &[fill="undefined"]{
+        fill: var(--table-header-color);
+      }
+    }
+
+
+    text, &__name {
+      transform: translate($table-header-padding-x, $table-header-padding-y);
+      font-weight: 700;
+      font-size: 16px;
+      fill: var(--table-header-fg-color);
+      pointer-events: none;
+      user-select: none;
+    }
+  }
+
+  &__highlight {
+
+    overflow:visible;
+    .db-table__background {
+      stroke: var(--table-highlight-stroke-color);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      stroke-opacity: 0.6;
+    }
+
+    .db-field__ref {
+      rect {
+        fill: var(--highlight-field-color);
+      }
+    }
+  }
+}

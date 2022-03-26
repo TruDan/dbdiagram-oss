@@ -19,33 +19,39 @@
                   :key="ref.id"
                   v-bind="ref"
                   :container-ref="root"
-                  :pan-zoom="panZoom"/>
+                  @mouseenter.passive="onRefMouseEnter"
+                  @mouseleave.passive="onRefMouseLeave"
+        />
       </g>
       <g id="tables-layer">
         <v-db-table v-for="table of tables"
                     v-bind="table"
                     :key="table.id"
                     :container-ref="root"
-                    :pan-zoom="panZoom"
+                    @mouseenter.passive="onTableMouseEnter"
+                    @mouseleave.passive="onTableMouseLeave"
         />
       </g>
     </g>
     <g id="tools-layer">
-      <svg x="10" y="10" width="150" height="32" class="db-tools">
-        <rect class="db-tools__bg" x="0" y="0" width="200" height="32"/>
-        <text x="0" y="16">x: {{ position.x }}</text>
-        <text x="75" y="16">y: {{ position.y }}</text>
+      <svg x="10" y="10" width="150" height="36" class="db-tools">
+        <rect class="db-tools__bg" />
+        <text x="0" class="db-tools__header">position</text>
+        <text x="0">x: <v-number :value="position.x" decimals="1" /></text>
+        <text x="75">y: <v-number :value="position.y" decimals="1" /></text>
       </svg>
 
-      <svg x="170" y="10" width="150" height="32" class="db-tools">
-        <rect class="db-tools__bg" x="0" y="0" width="200" height="32"/>
-        <text x="0" y="16">x: {{ store.pan.x }}</text>
-        <text x="75" y="16">y: {{ store.pan.y }}</text>
+      <svg x="170" y="10" width="150" height="36" class="db-tools">
+        <rect class="db-tools__bg" />
+        <text x="0" class="db-tools__header">pan</text>
+        <text x="0">x: <v-number :value="store.pan.x" decimals="1" /></text>
+        <text x="75">y: <v-number :value="store.pan.y" decimals="1" /></text>
       </svg>
 
-      <svg x="340" y="10" width="150" height="32" class="db-tools">
-        <rect class="db-tools__bg" x="0" y="0" width="200" height="32"/>
-        <text x="0" y="16">scale: {{ store.zoom }}</text>
+      <svg x="330" y="10" width="100" height="36" class="db-tools">
+        <rect class="db-tools__bg" />
+        <text x="0" class="db-tools__header">zoom</text>
+        <text x="0"><v-number :value="store.zoom" decimals="3" /></text>
       </svg>
     </g>
   </svg>
@@ -161,4 +167,11 @@
   watch(() => store.zoom, (newZoom) => {
     panZoom.value.zoom(newZoom);
   })
+
+  function onRefMouseEnter(e) { e.target.parentElement.appendChild(e.target); }
+  function onRefMouseLeave(e) {  }
+
+  function onTableMouseEnter(e) { e.target.parentElement.appendChild(e.target); }
+  function onTableMouseLeave(e) {  }
+
 </script>

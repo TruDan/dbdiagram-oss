@@ -1,15 +1,19 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-export const useChartStore = defineStore('chart', {
+export const useChartStore = defineStore("chart", {
   state: () => ({
     zoom: 1.0,
     pan: { x: 0, y: 0 },
-    ctm: [ 1, 0, 0, 1, 0, 0 ],
-    inverseCtm: [ 1, 0, 0, 1, 0, 0 ],
+    ctm: [1, 0, 0, 1, 0, 0],
+    inverseCtm: [1, 0, 0, 1, 0, 0],
     tables: {},
     refs: {}
   }),
   getters: {
+    persistenceData(state) {
+      const { zoom, pan, ctm, inverseCtm, tables, refs } = state;
+      return  { zoom, pan, ctm, inverseCtm, tables, refs };
+    },
     getPan(state) {
       return state.pan;
     },
@@ -21,7 +25,7 @@ export const useChartStore = defineStore('chart', {
     },
     getTable(state) {
       return (tableId) => {
-        if(!(tableId in state.tables))
+        if (!(tableId in state.tables))
           state.tables[tableId] = {
             x: 0,
             y: 0,
@@ -29,19 +33,26 @@ export const useChartStore = defineStore('chart', {
             height: 32
           };
         return state.tables[tableId];
-      }
+      };
     },
     getRef(state) {
       return (refId) => {
-        if(!(refId in state.refs))
+        if (!(refId in state.refs))
           state.refs[refId] = {
             endpoints: []
           };
         return state.refs[refId];
-      }
+      };
     }
   },
   actions: {
+    load(state) {
+      this.$patch({
+        ...state,
+        ctm: DOMMatrix.fromMatrix(state.ctm),
+        inverseCtm: DOMMatrix.fromMatrix(state.inverseCtm).inverse()
+      });
+    },
     updatePan(newPan) {
       this.$patch({
         pan: {
@@ -61,7 +72,7 @@ export const useChartStore = defineStore('chart', {
       this.$patch({
         ctm: DOMMatrix.fromMatrix(newCTM),
         inverseCtm: DOMMatrix.fromMatrix(newCTM).inverse()
-      })
+      });
     },
 
     updateTable(tableId, newTable) {
@@ -75,4 +86,4 @@ export const useChartStore = defineStore('chart', {
       });
     }
   }
-})
+});

@@ -12,18 +12,12 @@ const { configure } = require("quasar/wrappers");
 
 module.exports = configure(function (ctx) {
   return {
-    supportTS: {
-      tsCheckerConfig: {
-        eslint: {
-          enabled: true,
-          files: './src/**/*.{ts,tsx,js,jsx,vue}'
-        }
-      }
-    },
+    supportTS: false,
     boot: [
       "i18n",
       "ace",
-      "pinia"
+      "pinia",
+      "v3num"
     ],
     css: [
       "app.scss"

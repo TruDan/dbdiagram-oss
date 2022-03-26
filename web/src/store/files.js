@@ -1,15 +1,20 @@
-import { defineStore } from 'pinia'
-import { del, list, load, save } from "src/utils/storageUtils";
+import { defineStore } from "pinia";
 import { useEditorStore } from "src/store/editor";
 import { useChartStore } from "src/store/chart";
 
+import localforage from "localforage";
 
-export const useFilesStore = defineStore('files', {
+const fs = localforage.createInstance({
+  name: "dbdiagram-oss",
+  storeName: "files"
+});
+
+export const useFilesStore = defineStore("files", {
   state: () => ({
     saving: false,
     lastSave: 0,
     currentFile: "",
-    files: [],
+    files: []
   }),
   getters: {
     getFiles(state) {
@@ -22,34 +27,36 @@ export const useFilesStore = defineStore('files', {
   actions: {
     loadFileList() {
       console.log("loading file list");
-      this.files = list().filter(i => /^file-.*/.test(i)).map(i => i.replace(/^file-(.*)/, "$1"));
+
+      fs.keys()
+        .then(keys => {
+          this.files = keys;
+        });
     },
     loadFile(fileName) {
       this.loadFileList();
       console.log("loading file", fileName);
-      const file = load(`file-${fileName}`);
 
-      if (file && file.source) {
-        const fSource = file.source;
-        const fChart = file.chart || {};
+      fs.getItem(fileName)
+        .then(file => {
+          if (file && file.source) {
+            const fSource = file.source;
+            const fChart = file.chart || {};
 
-        const editor = useEditorStore();
-        const chart = useChartStore();
+            const editor = useEditorStore();
+            const chart = useChartStore();
 
-        editor.clearDatabase();
+            editor.load({
+              source: fSource
+            });
+            chart.load(fChart);
 
-        editor.$patch({
-          source: fSource
+            this.$patch({
+              currentFile: fileName
+            });
+
+          }
         });
-        chart.$patch(fChart);
-
-        this.$patch({
-          currentFile: fileName,
-        });
-
-        editor.clearParserError();
-        editor.updateDatabase();
-      }
     },
     saveFile(fileName) {
       this.saving = true;
@@ -72,21 +79,23 @@ export const useFilesStore = defineStore('files', {
 
       const file = {
         source: editor.source,
-        chart: chart
+        chart: chart.$state
       };
-      save(`file-${fileName}`, file);
-      this.loadFileList();
-      this.saving = false;
-      this.lastSave = new Date();
-      if (this.currentFile !== fileName) {
-        this.$patch({
-          currentFile: fileName
-        });
-      }
+
+      fs.setItem(fileName, JSON.parse(JSON.stringify(file))).then(() => {
+        this.loadFileList();
+        this.saving = false;
+        this.lastSave = new Date();
+        if (this.currentFile !== fileName) {
+          this.$patch({
+            currentFile: fileName
+          });
+        }
+      });
     },
     newFile() {
       this.$patch({
-        currentFile: undefined,
+        currentFile: undefined
       });
 
       const editor = useEditorStore();
@@ -98,9 +107,9 @@ export const useFilesStore = defineStore('files', {
     },
     deleteFile(fileName) {
       if (!fileName) return;
-      del(`file-${fileName}`);
-      this.loadFileList();
-
+      fs.removeItem(fileName).then(() => {
+        this.loadFileList();
+      });
     },
     renameFile(newName) {
       const oldName = this.currentFile;
@@ -110,6 +119,6 @@ export const useFilesStore = defineStore('files', {
         this.currentFile = newName;
       }
       this.loadFileList();
-    },
+    }
   }
-})
+});

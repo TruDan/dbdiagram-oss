@@ -95,6 +95,12 @@ export const useEditorStore = defineStore("editor", {
     }
   },
   actions: {
+    load(state) {
+      this.clearDatabase();
+      this.$patch(state);
+      this.clearParserError();
+      this.updateDatabase();
+    },
     updateSourceText(sourceText) {
       if (sourceText === this.source.text) return;
       this.$patch({

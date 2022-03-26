@@ -1,0 +1,31 @@
+
+
+.db-tablegroup {
+  pointer-events: none;
+
+  &__bg {
+    fill: var(--table-group-color);
+    stroke: var(--table-group-stroke-color);
+    stroke-width: 1px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke-opacity: 0.6;
+  }
+
+  &-header {
+    pointer-events: all;
+    fill: none;
+
+    &__text {
+      fill: var(--table-group-name-color);
+      transform: translateX(10px) translateY(.35em);
+      font-weight: 700;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    &__separator {
+      stroke: var(--table-group-stroke-color);
+    }
+  }
+}

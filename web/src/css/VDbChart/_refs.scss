@@ -1,0 +1,22 @@
+.db-ref {
+  &__path {
+    fill: none;
+    stroke: var(--ref-color);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: butt;
+  }
+  &__hitbox {
+    fill: none;
+    stroke: transparent;
+    //stroke: var(--ref-color);
+    stroke-width: 29;
+
+  }
+
+  &__highlight {
+    .db-ref__path {
+      stroke: var(--ref-highlight-color);
+    }
+  }
+}

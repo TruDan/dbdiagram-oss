@@ -1,0 +1,17 @@
+
+.db-tools {
+  &__bg {
+    fill: var(--table-header-color);
+    width: 100%;
+    height: 100%;
+  }
+  text {
+    fill: var(--table-header-fg-color);
+    transform: translateX(10px) translateY(27px);
+  }
+  &__header {
+    font-size: 10px;
+    transform: translateX(10px) translateY(12px) !important;
+    opacity: 0.6;
+  }
+}
