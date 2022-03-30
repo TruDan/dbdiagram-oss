@@ -5,6 +5,9 @@
 .body {
   &--dark {
     --chart-bg-color: #44444c;
+    --chart-bg-grid-small-stroke-color: rgb(127, 127, 127);
+    --chart-bg-grid-stroke-color: rgb(191, 191, 191);
+
     --ref-color: #9b9ca4;
     --ref-highlight-color: #3ea8de;
     --field-name-color: #d7d7d9;
@@ -30,6 +33,8 @@
 
   &--light {
     --chart-bg-color: #fbfbfb;
+    --chart-bg-grid-small-stroke-color: rgb(127, 127, 127);
+    --chart-bg-grid-stroke-color: rgb(63, 63, 63);
 
     --ref-color: #d3d3d3;
     --ref-highlight-color: #619bcc;
@@ -75,9 +80,28 @@
   }
 
   .db-chart__bg {
-    fill: #6f6f6f;
+    fill: var(--chart-bg-color);
     width: 100%;
     height: 100%;
+
+    &-grid {
+      stroke: var(--chart-bg-grid-stroke-color);
+      stroke-width: 1;
+      stroke-opacity: 0.5;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+
+      &-small {
+        path {
+          stroke: var(--chart-bg-grid-small-stroke-color);
+          stroke-width: 0.5;
+          stroke-opacity: 0.5;
+          vector-effect: non-scaling-stroke;
+        }
+      }
+    }
+
   }
 
 

@@ -152,6 +152,7 @@
     dragOffsetX.value = null
     dragOffsetY.value = null
     props.containerRef.removeEventListener('mousemove', drag)
+
     props.containerRef.removeEventListener('mouseup', drop)
     props.containerRef.removeEventListener('mouseleave', onMouseLeave)
   }

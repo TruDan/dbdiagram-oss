@@ -15,12 +15,12 @@
   },
   "dependencies": {
     "@dbml/core": "^2.3.1",
-    "@quasar/extras": "^1.12.5",
+    "@quasar/extras": "^1.13.4",
     "ace-builds": "^1.4.14",
     "core-js": "^3.6.5",
     "localforage": "^1.10.0",
     "pinia": "^2.0.11",
-    "quasar": "^2.5.5",
+    "quasar": "^2.6.2",
     "svg-pan-zoom": "^3.6.1",
     "vue": "^3.2.31",
     "vue-i18n": "^9.2.0-beta.23",
@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.17.0",
-    "@quasar/app": "^3.3.3",
+    "@quasar/app-webpack": "^3.4.7",
     "dotenv": "^16.0.0",
     "eslint": "^7.14.0",
     "eslint-config-standard": "^16.0.2",
