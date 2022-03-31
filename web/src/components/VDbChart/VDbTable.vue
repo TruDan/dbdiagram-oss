@@ -24,7 +24,7 @@
        @mouseleave.passive="hideTooltip"
     >
       <rect
-        height="32"
+        height="35"
         :width="state.width"
         :fill="headerColor"
       />
@@ -52,6 +52,7 @@
   import { computed, onMounted, ref, watch } from 'vue'
   import VDbField from './VDbField'
   import { useChartStore } from '../../store/chart'
+  import { snap } from '../../utils/MathUtil'
 
   const props = defineProps({
     id: Number,
@@ -88,11 +89,11 @@
       .reduce((prev,curr) => prev + curr, 3*16))
       .reduce((prev,curr) => Math.max(prev, curr));
 
-    state.value.width = Math.max(200, maxFieldWidth)
+    state.value.width = snap(Math.max(200, maxFieldWidth), gridSnap);
   }
 
   const updateHeight = () => {
-    state.value.height = 32 + (29 * props.fields.length);
+    state.value.height = 35 + (30 * props.fields.length);
   }
 
   watch(() => props.fields, value => {
@@ -112,7 +113,7 @@
 
   const tooltipSize = computed(() => ({
     width: 200,
-    height: 32 + (29 * props.fields.length)
+    height: 35 + (30 * props.fields.length)
   }))
 
   const highlight = ref(false)
@@ -122,6 +123,7 @@
   const dragOffsetY = ref(null)
   const dragOffset = ref(null)
   const gridSize = store.subGridSize;
+  const gridSnap = store.grid.snap;
 
   const onMouseEnter = (e) => {
     highlight.value = true
@@ -139,8 +141,8 @@
       x: offsetX,
       y: offsetY
     })
-    state.value.x = Math.round((p.x - dragOffsetX.value)/gridSize)*gridSize
-    state.value.y = Math.round((p.y - dragOffsetY.value)/gridSize)*gridSize
+    state.value.x = snap(p.x - dragOffsetX.value, gridSnap)
+    state.value.y = snap(p.y - dragOffsetY.value, gridSnap)
     emit('update:position', state.value)
   }
   const drop = (e) => {

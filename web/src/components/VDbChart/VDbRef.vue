@@ -19,7 +19,7 @@
     />
 
     <g class="db-ref__control-points">
-      <circle v-for="(v,i) of s.vertices"
+      <circle v-for="(v,i) of controlPoints"
               :key="i"
               :cx="v.x"
               :cy="v.y"
@@ -28,9 +28,8 @@
                 'db-ref__control-point__highlight': i === controlPoint_highlighted,
                 'db-ref__control-point__dragging': i === controlPoint_dragging,
               }"
-              r="5"
-              fill="red"
               :data-id="i"
+              @dblclick.passive="controlPoint_onDblClick"
               @mousedown.passive="controlPoint_startDrag"
               @mouseenter.passive="controlPoint_onMouseEnter"
               @mouseleave.passive="controlPoint_onMouseLeave"
@@ -41,8 +40,9 @@
 </template>
 
 <script setup>
-  import { computed, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watch, watchEffect } from 'vue'
+  import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watch, watchEffect } from 'vue'
   import { useChartStore } from '../../store/chart'
+  import { snap } from '../../utils/MathUtil'
 
   const props = defineProps({
     id: Number,
@@ -58,7 +58,10 @@
   })
 
   const store = useChartStore()
-  const s = store.getRef(props.id)
+  let s = store.getRef(props.id)
+
+  const gridSize = store.subGridSize
+  const gridSnap = store.grid.snap
 
   const highlight = ref(false)
   const affectedTables = ref([])
@@ -71,11 +74,11 @@
     return [
       {
         x: s.x,
-        y: s.y + 32 + (29 * fieldIndex) + (29 / 2.0)
+        y: s.y + 35 + (30 * fieldIndex) + (30 / 2.0)
       },
       {
         x: s.x + s.width,
-        y: s.y + 32 + (29 * fieldIndex) + (29 / 2.0)
+        y: s.y + 35 + (30 * fieldIndex) + (30 / 2.0)
       }
     ]
   }
@@ -128,8 +131,6 @@
     return [smallest.a, smallest.b]
   }
 
-  const gridSize = store.subGridSize
-
   const startAnchors = computed(() => {
     return getPositionAnchors(props.endpoints[0])
   })
@@ -137,26 +138,35 @@
     return getPositionAnchors(props.endpoints[1])
   })
 
+  const controlPoints = computed(() => {
+    if (!s.vertices.length || s.vertices.some(v => Number.isNaN(v.x) || Number.isNaN(v.y))) {
+      updateControlPoints()
+    }
+    if (!s.vertices.length || s.vertices.some(v => Number.isNaN(v.x) || Number.isNaN(v.y))) {
+      return []
+    }
+    return s.vertices
+  })
+
   const updateControlPoints = () => {
     const startElAnchors = startAnchors.value
     const endElAnchors = endAnchors.value
 
-    if (!s.auto) {
-      if (!s.vertices.length) {
-        s.auto = true
-      } else {
-        return
-      }
+    if (!s.vertices.length || s.vertices.some(v => Number.isNaN(v.x) || Number.isNaN(v.y))) {
+      s.auto = true
+    } else if (!s.auto) {
+      return
     }
 
     const [start, end] = getClosest(startElAnchors, endElAnchors)
+    console.log('updateControlPoints', start, end, startElAnchors, endElAnchors)
 
     const minX = Math.min(start.x, end.x)
     const minY = Math.min(start.y, end.y)
     const maxX = Math.max(start.x, end.x)
     const maxY = Math.max(start.y, end.y)
-    const midX = Math.round((minX + ((maxX - minX) / 2)) / gridSize) * gridSize
-    const midY = Math.round((minY + ((maxY - minY) / 2)) / gridSize) * gridSize
+    const midX = (minX + (((maxX - minX) || 2) / 2))
+    const midY = (minY + (((maxY - minY) || 2) / 2))
     const mid = {
       x: midX,
       y: midY
@@ -179,6 +189,7 @@
     const endElAnchors = endAnchors.value
 
     const points = s.vertices
+    if (points.some(p => Number.isNaN(p.x) || Number.isNaN(p.y))) return ``
     const start = getClosestAnchor(points[0], startElAnchors)
     const end = getClosestAnchor(points[points.length - 1], endElAnchors)
 
@@ -204,8 +215,8 @@
     controlPoint_highlighted.value = controlPointId
   }
   const controlPoint_onMouseLeave = ({ target }) => {
-      controlPoint_highlighted.value = null
-      controlPoint_highlighted.value = null
+    controlPoint_highlighted.value = null
+    controlPoint_highlighted.value = null
   }
   const controlPoint_startDrag = ({
     target,
@@ -238,12 +249,13 @@
       y: offsetY
     })
     const controlPointId = controlPoint_dragging.value
-    if(s.auto)
-      s.auto = false;
+    if (s.auto) {
+      s.auto = false
+    }
 
     const v = s.vertices[controlPointId]
-    v.x = Math.round((p.x - controlPoint_dragOffset.x) / gridSize) * gridSize
-    v.y = Math.round((p.y - controlPoint_dragOffset.y) / gridSize) * gridSize
+    v.x = snap((p.x - controlPoint_dragOffset.x), gridSnap)
+    v.y = snap((p.y - controlPoint_dragOffset.y), gridSnap)
 
   }
   const controlPoint_drop = (e) => {
@@ -257,18 +269,30 @@
     props.containerRef.removeEventListener('mouseleave', controlPoint_onMouseLeave, { passive: true })
   }
 
-  updateControlPoints();
+  const controlPoint_onDblClick = ({target}) => {
+    s.auto = true;
+    updateControlPoints()
+  }
+
   onMounted(() => {
     affectedTables.value = props.endpoints.map(e => store.getTable(e.fields[0].table.id))
-    updateControlPoints();
+    nextTick(() => {
+      updateControlPoints()
+    })
+  })
+
+  watch(() => props.id, (newId) => {
+    s = store.getRef(newId)
   })
 
   watch(props.endpoints, () => {
     affectedTables.value = props.endpoints.map(e => store.getTable(e.fields[0].table.id))
+  }, {
+    deep: true
   })
 
-  watch([props.endpoints, affectedTables], () => {
-    updateControlPoints();
+  watch(affectedTables, () => {
+    updateControlPoints()
   }, {
     deep: true
   })

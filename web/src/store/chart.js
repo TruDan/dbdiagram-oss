@@ -10,7 +10,8 @@ export const useChartStore = defineStore("chart", {
     refs: {},
     grid: {
       size: 100,
-      divisions: 10
+      divisions: 10,
+      snap: 5
     }
   }),
   getters: {

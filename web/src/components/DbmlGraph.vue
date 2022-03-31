@@ -54,10 +54,6 @@
     schema: {
       type: Object,
       required: true
-    },
-    positions: {
-      type: Object,
-      required: true
     }
   })
 

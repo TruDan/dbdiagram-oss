@@ -18,14 +18,26 @@
     .db-ref__path {
       stroke: var(--ref-highlight-color);
     }
+
+    .db-ref__control-point {
+      display: unset;
+    }
   }
 
   &__control-point {
-    stroke: black;
-    stroke-width: 1px;
+    display: none;
+    fill: black;
+    stroke: var(--ref-highlight-color);
+    stroke-width: 1;
+    r: 5;
 
     &__highlight {
-      stroke: var(--ref-highlight-color);
+      r: 6;
+      stroke-width: 2;
+    }
+
+    &__dragging {
+      fill: var(--ref-highlight-color)
     }
 
   }

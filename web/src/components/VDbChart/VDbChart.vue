@@ -146,9 +146,7 @@
     offset: {
       x: 0,
       y: 0
-    },
-    size: 100,
-    divisions: 10,
+    }
 
   })
   const panZoom = ref({})
@@ -219,7 +217,7 @@
     const {
       size: c,
       divisions: d
-    } = bgGrid
+    } = store.grid
     const e = c / d
 
     const restrainedMatrix = DOMMatrix.fromMatrix(matrix);
