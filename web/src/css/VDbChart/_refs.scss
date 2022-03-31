@@ -19,4 +19,14 @@
       stroke: var(--ref-highlight-color);
     }
   }
+
+  &__control-point {
+    stroke: black;
+    stroke-width: 1px;
+
+    &__highlight {
+      stroke: var(--ref-highlight-color);
+    }
+
+  }
 }

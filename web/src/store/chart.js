@@ -7,9 +7,16 @@ export const useChartStore = defineStore("chart", {
     ctm: [1, 0, 0, 1, 0, 0],
     inverseCtm: [1, 0, 0, 1, 0, 0],
     tables: {},
-    refs: {}
+    refs: {},
+    grid: {
+      size: 100,
+      divisions: 10
+    }
   }),
   getters: {
+    subGridSize(state) {
+      return state.grid.size / state.grid.divisions;
+    },
     persistenceData(state) {
       const { zoom, pan, ctm, inverseCtm, tables, refs } = state;
       return  { zoom, pan, ctm, inverseCtm, tables, refs };
@@ -39,7 +46,9 @@ export const useChartStore = defineStore("chart", {
       return (refId) => {
         if (!(refId in state.refs))
           state.refs[refId] = {
-            endpoints: []
+            endpoints: [],
+            vertices: [],
+            auto: true
           };
         return state.refs[refId];
       };
@@ -47,6 +56,7 @@ export const useChartStore = defineStore("chart", {
   },
   actions: {
     load(state) {
+      this.$reset();
       this.$patch({
         ...state,
         ctm: DOMMatrix.fromMatrix(state.ctm),

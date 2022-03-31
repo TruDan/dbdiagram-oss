@@ -15,10 +15,8 @@
     @mouseleave.passive="onMouseLeave"
   >
     <rect class="db-table__background"
-          x="0"
-          y="0"
-          :width="state.width"
-          :height="state.height"
+          :data-width="state.width"
+          :data-height="state.height"
     />
     <g class="db-table-header"
        @mousedown.passive="startDrag"
@@ -123,7 +121,7 @@
   const dragOffsetX = ref(null)
   const dragOffsetY = ref(null)
   const dragOffset = ref(null)
-  const gridSize = 10;
+  const gridSize = store.subGridSize;
 
   const onMouseEnter = (e) => {
     highlight.value = true
@@ -151,10 +149,9 @@
 
     dragOffsetX.value = null
     dragOffsetY.value = null
-    props.containerRef.removeEventListener('mousemove', drag)
-
-    props.containerRef.removeEventListener('mouseup', drop)
-    props.containerRef.removeEventListener('mouseleave', onMouseLeave)
+    props.containerRef.removeEventListener('mousemove', drag, { passive: true })
+    props.containerRef.removeEventListener('mouseup', drop, { passive: true })
+    props.containerRef.removeEventListener('mouseleave', onMouseLeave, { passive: true })
   }
   const startDrag = ({
     offsetX,

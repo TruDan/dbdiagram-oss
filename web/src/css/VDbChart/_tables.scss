@@ -1,6 +1,11 @@
 @import "variables";
 
 .db-table {
+  overflow: visible;
+  outline: transparent;
+  outline-width: 5px;
+  outline-style: solid;
+
   &-header {
     rect {
       cursor: grab;
@@ -16,7 +21,7 @@
 
 
     text, &__name {
-      transform: translate($table-header-padding-x, $table-header-padding-y);
+      transform: translateX(10px) translateY(.35em);
       font-weight: 700;
       font-size: 16px;
       fill: var(--table-header-fg-color);
@@ -25,16 +30,33 @@
     }
   }
 
-  &__highlight {
-    overflow: visible;
+  .db-table__background {
+    --width: attr(data-width  px);
+    --height: attr(data-height  px);
+    fill: #3ea8de;
+    x: -2px;
+    y: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    //stroke: var(--table-highlight-stroke-color);
+  }
 
-    .db-table__background {
-      //stroke: var(--table-highlight-stroke-color);
-      stroke: #FF0000;
-      stroke-width: 10px;
-      stroke-linejoin: round;
-      stroke-linecap: round;
-      stroke-opacity: 1;
+  &__highlight {
+    position: relative;
+    &::after {
+      overflow: visible;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      outline: 5px solid #3ea8de;
+      content: "";
+      background: red;
+      z-index:90000;
+      width: 500px;
+      height: 500px;
     }
 
     .db-field__ref {

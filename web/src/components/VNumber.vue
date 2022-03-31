@@ -14,7 +14,7 @@
   const props = defineProps({
     value: Number,
     round: Boolean,
-    decimals: Number,
+    decimals: [Number, String],
   })
 
   const number = ref()
