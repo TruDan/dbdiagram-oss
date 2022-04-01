@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { Parser } from "@dbml/core";
 import { throttle } from "quasar";
+import { useChartStore } from "./chart";
 
 
 export const useEditorStore = defineStore("editor", {
@@ -92,6 +93,12 @@ export const useEditorStore = defineStore("editor", {
     },
     getSplit(state) {
       return state.preferences.split;
+    },
+    save(state) {
+      return {
+        source: state.source,
+        preferences: state.preferences
+      }
     }
   },
   actions: {
@@ -134,6 +141,8 @@ export const useEditorStore = defineStore("editor", {
         this.database = database;
         this.clearParserError();
         console.log("updated database");
+        const chart = useChartStore();
+        chart.loadDatabase(database);
       } catch (e) {
         // do nothing
         console.error(e);

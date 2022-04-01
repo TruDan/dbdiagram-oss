@@ -42,15 +42,13 @@
                   :width="state.width"
       />
     </g>
-    <svg class="db-table-tooltip" v-if="tooltip" :x="state.width + 20">
-      <rect :width="tooltipSize.width" :height="tooltipSize.height"/>
-    </svg>
   </svg>
 </template>
 
 <script setup>
   import { computed, onMounted, ref, watch } from 'vue'
   import VDbField from './VDbField'
+  import VDbTableTooltip from './VDbTableTooltip'
   import { useChartStore } from '../../store/chart'
   import { snap } from '../../utils/MathUtil'
 
@@ -175,11 +173,17 @@
   }
 
   const showTooltip = () => {
-    tooltip.value = true
+    const tooltipPosition = {
+      x: state.value.x + state.value.width,
+      y: state.value.y,
+    }
+    store.showTooltip(tooltipPosition, VDbTableTooltip, {
+      table: props
+    })
   }
 
   const hideTooltip = () => {
-    tooltip.value = false
+    store.hideTooltip();
   }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="dbml-graph-wrapper">
-    <v-db-chart v-if="schema"
+    <v-db-chart v-if="schema && chart.loaded"
                 :tables="schema.tables"
                 :refs="schema.refs"
     >
@@ -83,6 +83,7 @@
       return (chart.zoom || 1) * 100.0
     },
     set (value) {
+
       chart.updateZoom(value / 100.0)
     }
   })

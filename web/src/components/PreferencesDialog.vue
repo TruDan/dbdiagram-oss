@@ -5,25 +5,14 @@
         <template #header>
           <q-toolbar>
             <q-tabs v-model="tab">
-              <q-tab name="general">General</q-tab>
-              <q-tab name="theme">Theme</q-tab>
+              <q-tab v-for="tab of tabs" :name="tab.name">{{ tab.label }}</q-tab>
             </q-tabs>
           </q-toolbar>
         </template>
 
         <q-tab-panels v-model="tab">
-          <q-tab-panel name="general"></q-tab-panel>
-          <q-tab-panel name="theme">
-            <div class="flex row justify-evenly">
-
-              <ace-theme-preview-card v-for="theme of themes"
-                                      :key="theme"
-                                      :theme="theme"
-                                      :width="'30%'"
-                                      :active="preferences.theme === theme.name"
-                                      @click="() => setTheme(theme)"
-              />
-            </div>
+          <q-tab-panel v-for="tab of tabs" :name="tab.name">
+            <component :is="tab.component" />
           </q-tab-panel>
         </q-tab-panels>
 
@@ -46,12 +35,13 @@
   import AceThemePreviewCard from './AceThemePreviewCard'
   import { useEditorStore } from '../store/editor'
   import DialogLayout from '../layouts/DialogLayout'
+  import GeneralTab from './PreferenceDialogTabs/GeneralTab'
+  import ThemeTab from './PreferenceDialogTabs/ThemeTab'
 
   export default {
-    name: 'AcePreferencesDialog',
+    name: 'PreferencesDialog',
     components: {
-      DialogLayout,
-      AceThemePreviewCard
+      DialogLayout
     },
     props: {},
     emits: [
@@ -66,25 +56,28 @@
         onDialogCancel
       } = useDialogPluginComponent()
 
-      const editor = useEditorStore()
-      const themelist = ace.require('ace/ext/themelist')
-      const themes = ref(themelist.themes)
+      const tabs = ref([
+        {
+          name: 'general',
+          label: 'General',
+          component: GeneralTab
+        },
+        {
+          name: 'thene',
+          label: 'Theme',
+          component: ThemeTab
+        }
+      ])
 
       return {
-        setTheme (newTheme) {
-          editor.preferences.theme = newTheme.name
-          //console.log(themelist, themelist.themesByName[editor.preferences.theme])
-        },
+        tabs,
         dialogRef,
         onDialogHide,
         onOKClick () {
           onDialogOK()
         },
         onCancelClick: onDialogCancel,
-
-        tab: ref('general'),
-        themes,
-        preferences: editor.preferences
+        tab: ref('general')
       }
     }
   }

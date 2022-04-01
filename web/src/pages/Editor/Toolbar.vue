@@ -58,7 +58,7 @@
       padding="sm"
       size="md"
       class="bg-secondary q-mx-xs"
-      @click="showAcePreferencesDialog"
+      @click="showPreferencesDialog"
     >
       <q-icon
         size="xs"
@@ -121,7 +121,7 @@
   import { computed } from 'vue'
   import { useEditorStore } from 'src/store/editor'
   import { useQuasar } from 'quasar'
-  import AcePreferencesDialog from '../../components/AcePreferencesDialog'
+  import PreferencesDialog from '../../components/PreferencesDialog'
   import { useFilesStore } from '../../store/files'
 
   const editor = useEditorStore()
@@ -176,9 +176,9 @@
     })
   }
 
-  const showAcePreferencesDialog = () => {
+  const showPreferencesDialog = () => {
     $q.dialog({
-      component: AcePreferencesDialog
+      component: PreferencesDialog
     })
   }
 

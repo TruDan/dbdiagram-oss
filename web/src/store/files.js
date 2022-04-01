@@ -46,10 +46,10 @@ export const useFilesStore = defineStore("files", {
             const editor = useEditorStore();
             const chart = useChartStore();
 
+            chart.load(fChart);
             editor.load({
               source: fSource
             });
-            chart.load(fChart);
 
             this.$patch({
               currentFile: fileName
@@ -78,8 +78,8 @@ export const useFilesStore = defineStore("files", {
       const chart = useChartStore();
 
       const file = {
-        source: editor.source,
-        chart: chart.$state
+        ...editor.save,
+        chart: chart.save
       };
 
       fs.setItem(fileName, JSON.parse(JSON.stringify(file))).then(() => {
