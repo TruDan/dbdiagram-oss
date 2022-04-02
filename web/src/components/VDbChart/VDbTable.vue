@@ -15,8 +15,8 @@
     @mouseleave.passive="onMouseLeave"
   >
     <rect class="db-table__background"
-          :data-width="state.width"
-          :data-height="state.height"
+          :width="state.width"
+          :height="state.height"
     />
     <g class="db-table-header"
        @mousedown.passive="startDrag"
@@ -85,7 +85,7 @@
     const fieldEls = [...root.value.querySelectorAll('.db-field')];
     const maxFieldWidth = fieldEls.map(f => [...f.querySelectorAll('text')].map(ft => ft.getComputedTextLength())
       .reduce((prev,curr) => prev + curr, 3*16))
-      .reduce((prev,curr) => Math.max(prev, curr));
+      .reduce((prev,curr) => Math.max(prev, curr), 0);
 
     state.value.width = snap(Math.max(200, maxFieldWidth), gridSnap);
   }

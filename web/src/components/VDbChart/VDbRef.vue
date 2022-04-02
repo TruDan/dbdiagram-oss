@@ -189,7 +189,7 @@
     const endElAnchors = endAnchors.value
 
     const points = s.vertices
-    if (points.some(p => Number.isNaN(p.x) || Number.isNaN(p.y))) return ``
+    if (points.length == 0 || points.some(p => Number.isNaN(p.x) || Number.isNaN(p.y))) return ``
     const start = getClosestAnchor(points[0], startElAnchors)
     const end = getClosestAnchor(points[points.length - 1], endElAnchors)
 

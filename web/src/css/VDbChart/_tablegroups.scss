@@ -3,7 +3,7 @@
 .db-tablegroup {
   pointer-events: none;
 
-  &__bg {
+  &__background {
     fill: var(--table-group-color);
     stroke: var(--table-group-stroke-color);
     stroke-width: 1px;
@@ -16,7 +16,7 @@
     pointer-events: all;
     fill: none;
 
-    &__text {
+    &__name {
       fill: var(--table-group-name-color);
       transform: translateX(10px) translateY(.35em);
       font-weight: 700;

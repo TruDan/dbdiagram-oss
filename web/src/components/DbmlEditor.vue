@@ -13,7 +13,7 @@
 
 <script>
   import { VAceEditor } from 'vue3-ace-editor'
-  import { computed, ref, watch } from 'vue'
+  import { computed, reactive, ref, watch } from 'vue'
   import { useEditorStore } from 'src/store/editor'
   import { Range } from 'ace-builds'
   import { InlineAnnotation } from './ace/inline_annotation';
@@ -32,6 +32,7 @@
         markerId: null,
         errorMarkerId: null
       })
+      const annotations = reactive([]);
 
       const sourceCode = computed({
         get: () => props.source,
@@ -51,6 +52,7 @@
         const range = new Range(start.row - 1, start.col - 1, end.row - 1, end.col - 1)
         ace.focus()
         ace.clearSelection()
+        ace.scrollToLine(start.row - 1);
         ace.moveCursorTo(start.row - 1, start.col - 1)
         currentMarkerRef.value.markerId = ace.session.addMarker(range, 'ace_active-line', 'text')
         console.log('highlightTokenRange', currentMarkerRef.value.markerId, start, end)
@@ -89,6 +91,10 @@
           }
 
           if ('parserError' in mutation.payload) {
+            for(const a of annotations) {
+              a.remove();
+            }
+
             ace.session.clearAnnotations()
             if(currentMarkerRef.value.errorMarkerId) {
               ace.session.removeMarker(currentMarkerRef.value.errorMarkerId);
@@ -97,7 +103,8 @@
 
             if (mutation.payload.parserError) {
               const e = state.parserError
-              ace.session.setAnnotations([
+
+              const newAnnotations = [
                 new InlineAnnotation(ace.session, {
                   text: e.message,
                   type: e.type,
@@ -106,7 +113,9 @@
                   endRow: e.location.end.row,
                   endColumn: e.location.end.col
                 })
-              ])
+              ]
+              annotations.push(...newAnnotations);
+              ace.session.setAnnotations(newAnnotations);
             }
           }
         }

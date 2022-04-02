@@ -7,6 +7,7 @@ export const useChartStore = defineStore("chart", {
     pan: { x: 0, y: 0 },
     ctm: [1, 0, 0, 1, 0, 0],
     inverseCtm: [1, 0, 0, 1, 0, 0],
+    tableGroups: {},
     tables: {},
     refs: {},
     grid: {
@@ -19,6 +20,7 @@ export const useChartStore = defineStore("chart", {
       x: 0,
       y: 0,
       show: false,
+      target: null,
       component: null,
       binds: null,
       width: 0,
@@ -54,6 +56,18 @@ export const useChartStore = defineStore("chart", {
         return state.tables[tableId];
       };
     },
+    getTableGroup(state) {
+      return (tableGroupId) => {
+        if (!(tableGroupId in state.tableGroups))
+          state.tableGroups[tableGroupId] = {
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 32
+          };
+        return state.tableGroups[tableGroupId];
+      };
+    },
     getRef(state) {
       return (refId) => {
         if (!(refId in state.refs))
@@ -78,10 +92,10 @@ export const useChartStore = defineStore("chart", {
     }
   },
   actions: {
-    showTooltip({x, y}, component, binds) {
+    showTooltip(target, component, binds) {
       this.tooltip = {
-        x,
-        y,
+        x: target.x,
+        y: target.y,
         component: markRaw(component),
         binds,
         show: true
@@ -99,6 +113,10 @@ export const useChartStore = defineStore("chart", {
       };
     },
     loadDatabase(database) {
+      for(const tableGroup of database.schemas[0].tableGroups)
+      {
+        this.getTableGroup(tableGroup.id);
+      }
       for(const table of database.schemas[0].tables)
       {
         this.getTable(table.id);

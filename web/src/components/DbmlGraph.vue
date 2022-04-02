@@ -1,11 +1,15 @@
 <template>
   <div class="dbml-graph-wrapper">
     <v-db-chart v-if="schema && chart.loaded"
-                :tables="schema.tables"
-                :refs="schema.refs"
-    >
+                v-bind="schema"
+     />
 
-    </v-db-chart>
+    <div class="dbml-structure-wrapper" v-if="false">
+      <q-card class="shadow-6">
+        <v-db-structure v-if="editor.database.schemas" :database="editor.database" />
+      </q-card>
+    </div>
+
     <div class="dbml-toolbar-wrapper">
       <q-card class="shadow-6">
         <q-toolbar class="rounded-borders">
@@ -22,7 +26,7 @@
             color="secondary"
             dense
             @click="applyScaleToFit">
-            Fit
+            fit
           </q-btn>
           <q-space/>
 
@@ -49,6 +53,7 @@
   import { computed, onMounted, ref, watch } from 'vue'
   import VDbChart from './VDbChart/VDbChart'
   import { useChartStore } from '../store/chart'
+  import VDbStructure from './VDbStructure'
 
   const props = defineProps({
     schema: {
@@ -102,7 +107,7 @@
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
   .dbml-graph, .db-chart {
     height: 100% !important;
     width: 100% !important;
@@ -123,5 +128,21 @@
     right: 0;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .dbml-structure-wrapper {
+    width: 400px;
+    max-height: 300px;
+    height: 300px;
+    align-self: start;
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    margin-right: auto;
+
+    > .q-card {
+      max-height: 300px;
+      overflow: auto;
+    }
   }
 </style>

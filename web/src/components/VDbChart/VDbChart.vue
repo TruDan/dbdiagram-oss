@@ -46,7 +46,13 @@
     <g id="viewport-layer">
       <g id="tablegroups-layer"
          v-if="store.loaded">
+        <v-db-table-group v-for="tableGroup of tableGroups"
+                          :key="tableGroup.id"
+                          v-bind="tableGroup"
+                          :container-ref="root"
+        >
 
+        </v-db-table-group>
       </g>
       <g id="refs-layer"
          v-if="store.loaded">
@@ -70,7 +76,7 @@
       </g>
       <g id="overlays-layer"
          v-if="store.loaded">
-        <v-db-tooltip />
+        <v-db-tooltip/>
       </g>
     </g>
     <g id="tools-layer">
@@ -114,10 +120,15 @@
   import svgPanZoom from 'svg-pan-zoom'
   import { useChartStore } from '../../store/chart'
   import VDbTooltip from './VDbTooltip'
+  import VDbTableGroup from './VDbTableGroup'
 
   const store = useChartStore()
 
   const props = defineProps({
+    tableGroups: {
+      type: Array,
+      default: () => ([])
+    },
     tables: {
       type: Array,
       default: () => ([])
@@ -165,7 +176,7 @@
   let initialized = false
 
   const updateCursorPosition = (e) => {
-    const p = store.ctm.transformPoint({
+    const p = store.inverseCtm.transformPoint({
       x: e.offsetX,
       y: e.offsetY
     })
@@ -209,32 +220,37 @@
     } = store.grid
     const e = c / d
 
-    const restrainedMatrix = DOMMatrix.fromMatrix(matrix);
-    const minPos = restrainedMatrix.transformPoint({x: 0, y: 0})
-    const maxPos = restrainedMatrix.transformPoint({x: c, y: c})
+    const restrainedMatrix = DOMMatrix.fromMatrix(matrix)
+    const minPos = restrainedMatrix.transformPoint({
+      x: 0,
+      y: 0
+    })
+    const maxPos = restrainedMatrix.transformPoint({
+      x: c,
+      y: c
+    })
 
-    const cx = Math.abs(maxPos.x-minPos.x);
-    const cy = Math.abs(maxPos.y-minPos.y);
-    const dx = cx / d;
-    const dy = cy / d;
+    const cx = Math.abs(maxPos.x - minPos.x)
+    const cy = Math.abs(maxPos.y - minPos.y)
+    const dx = cx / d
+    const dy = cy / d
 
-    const tx = minPos.x;
-    const ty = minPos.y;
-    const mx = ((tx % cx) + cx) % cx;
-    const my = ((ty % cy) + cy) % cy;
-
+    const tx = minPos.x
+    const ty = minPos.y
+    const mx = ((tx % cx) + cx) % cx
+    const my = ((ty % cy) + cy) % cy
 
     p += 'M 0 0'
     for (let i = 1; i < d; i++) {
-      p += ` m ${dx*i} 0 l 0 ${cy} m -${dx*i} -${cy}`
+      p += ` m ${dx * i} 0 l 0 ${cy} m -${dx * i} -${cy}`
     }
     p += 'M 0 0'
     for (let i = 1; i < d; i++) {
-      p += ` m 0 ${dy*i} l ${cx} 0 m -${cx} -${dy*i}`
+      p += ` m 0 ${dy * i} l ${cx} 0 m -${cx} -${dy * i}`
     }
 
-    bgGrid.pattern.x = -mx;
-    bgGrid.pattern.y = -my;
+    bgGrid.pattern.x = -mx
+    bgGrid.pattern.y = -my
     bgGrid.pattern.width = cx
     bgGrid.pattern.height = cy
     bgGrid.pattern.path = p
