@@ -2,11 +2,17 @@
   <div class="dbml-graph-wrapper">
     <v-db-chart v-if="schema && chart.loaded"
                 v-bind="schema"
+                @dblclick:table-group="locateInEditor"
+                @dblclick:table="locateInEditor"
+                @dblclick:field="locateInEditor"
+                @dblclick:ref="locateInEditor"
      />
 
     <div class="dbml-structure-wrapper" v-if="false">
       <q-card class="shadow-6">
-        <v-db-structure v-if="editor.database.schemas" :database="editor.database" />
+        <v-db-structure v-if="editor.database.schemas"
+                        :database="editor.database"
+        />
       </q-card>
     </div>
 
@@ -68,17 +74,10 @@
   const editor = useEditorStore()
   const chart = useChartStore()
 
-  const locateTable = (tableId) => {
-    const table = editor.findTable(tableId)
-    if (table) {
-      const token = table.token
-      editor.updateSelectionMarker(token.start, token.end)
-    }
-  }
-  const locateField = (fieldId) => {
-    const field = editor.findField(fieldId)
-    if (field) {
-      const token = field.token
+  const locateInEditor = (e, thing) => {
+    console.log("locateInEditor", e, thing);
+    if (thing) {
+      const token = thing.token
       editor.updateSelectionMarker(token.start, token.end)
     }
   }
@@ -88,7 +87,6 @@
       return (chart.zoom || 1) * 100.0
     },
     set (value) {
-
       chart.updateZoom(value / 100.0)
     }
   })

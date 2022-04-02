@@ -13,7 +13,7 @@
         </span>
       </template>
 
-      <q-list dense >
+      <q-list dense>
         <q-item v-for="file of fileItems" :key="file"
                 clickable
                 @click="() => loadFile(file)"
@@ -54,17 +54,6 @@
         size="xs"
         name="save"/>
     </q-btn>
-    <q-btn
-      padding="sm"
-      size="md"
-      class="bg-secondary q-mx-xs"
-      @click="showPreferencesDialog"
-    >
-      <q-icon
-        size="xs"
-        name="settings"
-      />
-    </q-btn>
 
     <q-btn-dropdown
       padding="xs sm"
@@ -79,7 +68,20 @@
           name="file_download"/>
         Export
       </template>
+
+      <q-list dense>
+        <q-item v-for="exportOption of exportOptions"
+                :key="exportOption.id"
+                clickable
+                dense
+        >
+          <q-item-section>
+            <q-item-label>{{ exportOption.label }}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
     </q-btn-dropdown>
+
     <q-btn-dropdown
       padding="xs sm"
       size="md"
@@ -95,7 +97,9 @@
       </template>
     </q-btn-dropdown>
   </div>
+
   <q-space/>
+
   <q-btn
     padding="sm"
     size="md"
@@ -115,10 +119,21 @@
       :dark="dark">
     </q-toggle>
   </q-btn>
+  <q-btn
+    padding="sm"
+    size="md"
+    class="bg-secondary q-mx-xs"
+    @click="showPreferencesDialog"
+  >
+    <q-icon
+      size="xs"
+      name="settings"
+    />
+  </q-btn>
 </template>
 
 <script setup>
-  import { computed } from 'vue'
+  import { computed, ref } from 'vue'
   import { useEditorStore } from 'src/store/editor'
   import { useQuasar } from 'quasar'
   import PreferencesDialog from '../../components/PreferencesDialog'
@@ -127,6 +142,37 @@
   const editor = useEditorStore()
   const files = useFilesStore()
   const $q = useQuasar()
+
+  const exportOptions = ref([
+    {
+      id: 'json',
+      label: 'Json'
+    },
+    {
+      id: 'mysql',
+      label: 'MySQL'
+    },
+    {
+      id: 'postgres',
+      label: 'PostgreSQL'
+    },
+    {
+      id: 'mssql',
+      label: 'SQL Server'
+    },
+    {
+      id: 'svg',
+      label: 'SVG'
+    },
+    {
+      id: 'png',
+      label: 'PNG'
+    },
+    {
+      id: 'pdf',
+      label: 'PDF'
+    }
+  ])
 
   const dark = computed({
     get: () => editor.getDark,

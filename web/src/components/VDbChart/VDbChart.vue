@@ -50,6 +50,9 @@
                           :key="tableGroup.id"
                           v-bind="tableGroup"
                           :container-ref="root"
+                          @click.passive="dblclickHelper(onTableGroupDblClick, $event, tableGroup)"
+                          @mouseenter.passive="onTableGroupMouseEnter"
+                          @mouseleave.passive="onTableGroupMouseLeave"
         >
 
         </v-db-table-group>
@@ -60,6 +63,7 @@
                   :key="ref.id"
                   v-bind="ref"
                   :container-ref="root"
+                  @click.passive="dblclickHelper(onRefDblClick, $event, ref)"
                   @mouseenter.passive="onRefMouseEnter"
                   @mouseleave.passive="onRefMouseLeave"
         />
@@ -70,6 +74,8 @@
                     v-bind="table"
                     :key="table.id"
                     :container-ref="root"
+                    @click:header="dblclickHelper(onTableDblClick, $event, table)"
+                    @click:field="(...e) => dblclickHelper(onFieldDblClick, ...e)"
                     @mouseenter.passive="onTableMouseEnter"
                     @mouseleave.passive="onTableMouseLeave"
         />
@@ -138,6 +144,14 @@
       default: () => ([])
     }
   })
+
+  const emit = defineEmits([
+    'dblclick:table-group',
+    'dblclick:table',
+    'dblclick:ref',
+    'dblclick:field',
+  ])
+
   const root = ref(null)
   const bgGrid2 = ref(null)
   const bgGridRect = ref(null)
@@ -308,6 +322,23 @@
     panZoom.value.zoom(newZoom)
   })
 
+  function onRefDblClick (e, ref) {
+    console.log("onRefDblClick", e, ref);
+    emit('dblclick:ref', e, ref);
+  }
+  function onFieldDblClick (e, field) {
+    console.log("onFieldDblClick", e, field);
+    emit('dblclick:field', e, field);
+  }
+  function onTableDblClick (e, table) {
+    console.log("onTableDblClick", e, table);
+    emit('dblclick:table', e, table);
+  }
+  function onTableGroupDblClick (e, tableGroup) {
+    console.log("onTableGroupDblClick", e, tableGroup);
+    emit('dblclick:table-group', e, tableGroup);
+  }
+
   function onRefMouseEnter (e) {
     e.target.parentElement.appendChild(e.target)
   }
@@ -320,6 +351,27 @@
   }
 
   function onTableMouseLeave (e) {
+  }
+
+  function onTableGroupMouseEnter (e) {
+    e.target.parentElement.appendChild(e.target)
+  }
+
+  function onTableGroupMouseLeave (e) {
+  }
+
+  let lastClick = Date.now();
+  let lastClicked = null;
+  function dblclickHelper(fn, e, ...args) {
+    console.log("dblclickHelper", e, ...args)
+    const nowClick = Date.now();
+
+    if (((nowClick - lastClick) < 500) && lastClicked === e.target) {
+      console.log("dblclickHelperYES", e, ...args)
+      fn(e, ...args);
+    }
+    lastClicked = e.target;
+    lastClick = nowClick;
   }
 
 </script>

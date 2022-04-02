@@ -27,6 +27,7 @@
         height="35"
         :width="state.width"
         :fill="headerColor"
+        @click.passive="onHeaderClick"
       />
       <text class="db-table-header__name"
             y="16"
@@ -40,6 +41,7 @@
                   v-bind="field"
                   :key="field.id"
                   :width="state.width"
+                  @click.passive="onFieldClick($event, field)"
       />
     </g>
   </svg>
@@ -51,6 +53,7 @@
   import VDbTableTooltip from './VDbTableTooltip'
   import { useChartStore } from '../../store/chart'
   import { snap } from '../../utils/MathUtil'
+  import { useEditorStore } from '../../store/editor'
 
   const props = defineProps({
     id: Number,
@@ -74,6 +77,7 @@
     containerRef: Object
   })
 
+  const editor = useEditorStore()
   const store = useChartStore()
 
   const state = computed(() => store.getTable(props.id))
@@ -105,7 +109,9 @@
   })
 
   const emit = defineEmits([
-    'update:position'
+    'update:position',
+    'click:header',
+    'click:field'
   ])
 
 
@@ -184,6 +190,12 @@
 
   const hideTooltip = () => {
     store.hideTooltip();
+  }
+  function onHeaderClick (e) {
+    emit('click:header', e, editor.findTable(props.id));
+  }
+  function onFieldClick (e, field) {
+    emit('click:field', e, field);
   }
 </script>
 
